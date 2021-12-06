@@ -20,17 +20,27 @@ mongoose.connect('mongodb://localhost:27017/playo',{
 
 const Arena=require('./models/arena');
 
-app.get('/makearena', async(req,res)=>{
-    const myarena=new Arena({name:'home',location:'ontario'});
-    await myarena.save();
-    res.send(myarena);
-})
+
+
+// testing the connection to DB using mongoose model
+// app.get('/makearena', async(req,res)=>{
+//     const myarena=new Arena({name:'home',location:'ontario'});
+//     await myarena.save();
+//     res.send(myarena);
+// })
+
 
 app.get("/", (req,res)=>{
     res.send("hello from playo");
 })
+
 app.get("/home", (req,res)=>{
     res.render('home');
+})
+
+app.get("/list", async(req,res)=>{
+    let allArenas=await Arena.find({});
+    res.render('list', {allArenas});
 })
 
 
