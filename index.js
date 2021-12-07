@@ -39,8 +39,10 @@ app.get("/home", (req,res)=>{
 })
 
 app.get("/list", async(req,res)=>{
-  let noMatch = null;
+  // searching for an arena (name or location)
+  let noMatch = null; let sstring="";
   if (req.query.search) {
+    sstring=req.query.search;
     Arena.find({}, function(err, allArenas) {
       if (err) {
         console.log(err);
@@ -51,7 +53,7 @@ app.get("/list", async(req,res)=>{
             if (result.length < 1) {
             noMatch = req.query.search;
             }
-            res.render("list.ejs", {allArenas: result, noMatch});
+            res.render("list.ejs", {allArenas: result, noMatch,sstring});
         }
     });
  } else {
@@ -60,7 +62,7 @@ app.get("/list", async(req,res)=>{
             console.log(err);
           } else {
               
-            res.render("list.ejs", {allArenas,noMatch});
+            res.render("list.ejs", {allArenas,noMatch,sstring});
           }
         });
     }

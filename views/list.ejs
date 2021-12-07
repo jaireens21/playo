@@ -8,17 +8,25 @@
 </head>
 <body>
     <div>
+        <!-- search string input box -->
         <form method="GET" action="/list" >
             <input class="search" type="search" placeholder="Search" aria-label="Search" name="search">
             <button>Go</button> 
         </form>
-        </div>
+    </div>
+
+    <%if(sstring){%>
+        <h2>Search term: '<%=sstring%>'</h1>
+    <% }%>
+
     <%if(noMatch!==null){%>
         <h1>No matches found for <%=noMatch%>!</h1>
     <% }%>
+
     <% if(noMatch==null){%>
       <h1>Arenas in Ontario, Canada</h1>
     <% }%> 
+    
    <ul>
        <%for(let arena of allArenas){%>
         <li><%=arena.name%> in <%=arena.location%></li>
