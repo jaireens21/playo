@@ -39,8 +39,31 @@ app.get("/home", (req,res)=>{
 })
 
 app.get("/list", async(req,res)=>{
-    let allArenas=await Arena.find({});
-    res.render('list', {allArenas});
+  let noMatch = null;
+  if (req.query.search) {
+    Arena.find({}, function(err, allArenas) {
+      if (err) {
+        console.log(err);
+      } else {
+            let regex=new RegExp(req.query.search, 'gi');
+            let result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)));
+            
+            if (result.length < 1) {
+            noMatch = req.query.search;
+            }
+            res.render("list.ejs", {allArenas: result, noMatch});
+        }
+    });
+ } else {
+        Arena.find({}, function(err, allArenas) {
+          if (err) {
+            console.log(err);
+          } else {
+              
+            res.render("list.ejs", {allArenas,noMatch});
+          }
+        });
+    }
 })
 
 
