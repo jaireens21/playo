@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Details</title>
+</head>
+<body>
+    <h1> Arena Details</h1>
+    <h2><%=arena.name%></h2>
+    <h3><%=arena.location%></h3>
+
+    <a href="/arenas/<%=arena._id%>/edit">Edit</a>
+
+    <form method="POST" action="/arenas/<%=arena._id%>?_method=DELETE">
+        <button>DELETE</button>
+    </form>
+
+    <a href="/arenas/list">All Arenas</a>
+
+</body>
+</html>

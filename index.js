@@ -1,6 +1,9 @@
 const express=require('express');
 const app=express();
 const path=require('path');
+const methodOverride= require('method-override');
+app.use(methodOverride('_method'));
+
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -19,8 +22,10 @@ mongoose.connect('mongodb://localhost:27017/playo',{
 });
 
 const Arena=require('./models/arena');
+const arena = require('./models/arena');
 
-
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // testing the connection to DB using mongoose model
 // app.get('/makearena', async(req,res)=>{
@@ -38,7 +43,8 @@ app.get("/home", (req,res)=>{
     res.render('home');
 })
 
-app.get("/list", async(req,res)=>{
+//list page showing all arenas
+app.get("/arenas/list", async(req,res)=>{
   // searching for an arena (name or location)
   let noMatch = null; let sstring="";
   if (req.query.search) {
@@ -66,6 +72,43 @@ app.get("/list", async(req,res)=>{
           }
         });
     }
+})
+
+//get a form to add new arena
+app.get('/arenas/new', (req,res)=>{
+  res.render('new.ejs');
+  })
+
+//show page for every arena
+app.get('/arenas/:id', async(req,res)=>{
+  const arena=await Arena.findById(req.params.id);
+  res.render('show.ejs', {arena});
+})
+
+//submitting new arena details to DB
+app.post('/arenas', async(req,res)=>{
+  const newArena=new Arena(req.body.arena);
+  await newArena.save();
+  res.redirect('/arenas/list');
+})
+
+//serving edit form for an arena
+app.get('/arenas/:id/edit', async(req,res)=>{
+  const foundArena=await Arena.findById(req.params.id);
+  res.render('edit.ejs', {arena:foundArena});
+})
+
+
+//submitting the edit form's details to DB
+app.put('/arenas/:id', async(req,res)=>{
+  const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
+  res.redirect(`/arenas/${updatedArena._id}`);
+})
+
+//deleting an arena
+app.delete('/arenas/:id', async(req,res)=>{
+  const deletedArena=await Arena.findByIdAndDelete(req.params.id);
+  res.redirect('/arenas/list');
 })
 
 

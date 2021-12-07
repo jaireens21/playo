@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Arena</title>
+</head>
+<body>
+    <h1>Edit Details of New Arena</h1>
+    <form method="POST" action="/arenas/<%=arena._id%>?_method=PUT">
+        <label for="name">Enter Name:</label>
+        <input type="text" name="arena[name]" id="name" value="<%=arena.name%>">
+        <label for="location">Enter Location:</label>
+        <input type="text" name="arena[location]" id="location" value="<%=arena.location%>">
+        <button>Submit</button>
+    </form>
+    <a href="/arenas/<%=arena._id%>">Back to arena</a>
+</body>
+</html>

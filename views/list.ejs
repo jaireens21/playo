@@ -9,7 +9,7 @@
 <body>
     <div>
         <!-- search string input box -->
-        <form method="GET" action="/list" >
+        <form method="GET" action="/arenas/list" >
             <input class="search" type="search" placeholder="Search" aria-label="Search" name="search">
             <button>Go</button> 
         </form>
@@ -29,11 +29,12 @@
     
    <ul>
        <%for(let arena of allArenas){%>
-        <li><%=arena.name%> in <%=arena.location%></li>
+        <li><%=arena.name%> in <%=arena.location%>   <a href="/arenas/<%=arena._id%>">View Details</a></li>
+        
        <%}%>
    </ul>
 
-   
+   <a href="/arenas/new">Make a new Arena</a>
 </body>
 
 
