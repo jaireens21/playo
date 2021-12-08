@@ -1,9 +1,6 @@
 const express=require('express');
 const app=express();
 const path=require('path');
-const methodOverride= require('method-override');
-app.use(methodOverride('_method'));
-
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -22,10 +19,16 @@ mongoose.connect('mongodb://localhost:27017/playo',{
 });
 
 const Arena=require('./models/arena');
-const arena = require('./models/arena');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+const methodOverride= require('method-override');
+app.use(methodOverride('_method'));
+
+const ejsMate=require('ejs-mate');
+app.engine('ejs', ejsMate);
+
 
 // testing the connection to DB using mongoose model
 // app.get('/makearena', async(req,res)=>{
@@ -34,14 +37,15 @@ app.use(express.json());
 //     res.send(myarena);
 // })
 
-
 app.get("/", (req,res)=>{
-    res.send("hello from playo");
+  res.render('home');
 })
 
-app.get("/home", (req,res)=>{
-    res.render('home');
+app.get("/arenas", (req,res)=>{
+  res.render('arenas');
 })
+
+
 
 //list page showing all arenas
 app.get("/arenas/list", async(req,res)=>{
