@@ -1,10 +1,12 @@
 <%- layout('./layout/boilerplate.ejs') %>
-
-    <div>
+<div class="container">
+    <div class="mb-3">
         <!-- search string input box -->
-        <form method="GET" action="/arenas/list" >
-            <input class="search" type="search" placeholder="Search" aria-label="Search" name="search">
-            <button>Go</button> 
+        <form class="input-group" method="GET" action="/arenas/list" >
+            <input class="search form-control" type="search" placeholder="Search" aria-label="Search" name="search">
+            <div class="input-group-append">
+                <button class="btn btn-danger"><i class="fa fa-search"></i></button> 
+            </div>
         </form>
     </div>
 
@@ -13,18 +15,30 @@
     <% }%>
 
     <%if(noMatch!==null){%>
-        <h1>No matches found for <%=noMatch%>!</h1>
+        <h1>No matches found!</h1>
     <% }%>
 
-    <% if(noMatch==null){%>
+    <% if(!sstring){%>
       <h1>Arenas in Ontario, Canada</h1>
     <% }%> 
     
-   <ul>
-       <%for(let arena of allArenas){%>
-        <li><%=arena.name%> in <%=arena.location%>   <a href="/arenas/<%=arena._id%>">View Details</a></li>
-        
-       <%}%>
-   </ul>
+   
+   <div class="row">
+        <%for(let arena of allArenas){%>
+            <div class="col-sm-12 col-md-6 col-lg-4">
+                <div class="card mt-4" >
+                    <img class="card-img-top" src="<%=arena.image%>/100px180/" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title"><%=arena.name%></h5>
+                        <p class="card-text"><%=arena.location%></p>
+                        <a href="/arenas/<%=arena._id%>" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        <%}%>
+   </div>
+   <div class="my-5">
+        <a href="/arenas/new" class="btn btn-success">Make a new Arena</a>
+    </div>
 
-   <a href="/arenas/new">Make a new Arena</a>
+</div>

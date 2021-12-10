@@ -21,7 +21,13 @@ const seedDB=async()=>{
     
     for (let i=0;i<10;++i){
         
-        const myarena=new Arena({name:`${part1[Math.floor(Math.random()*part1.length)]} ${part2[Math.floor(Math.random()*part2.length)]}`,location:`${cities[Math.floor(Math.random()*cities.length)]}`});
+        const myarena=new Arena({
+            name:`${part1[Math.floor(Math.random()*part1.length)]} ${part2[Math.floor(Math.random()*part2.length)]}`,
+            location:`${cities[Math.floor(Math.random()*cities.length)]}`,
+            image: 'https://source.unsplash.com/collection/892620',
+            description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis facilis suscipit odit molestiae, aliquid quo, odio fugiat dignissimos quibusdam iure quaerat dolores quam voluptatem! Mollitia earum similique fuga corporis cupiditate.',
+            price: Math.floor(Math.random()*20)+10,
+        });
         await myarena.save();
     }
     console.log('seeded!');

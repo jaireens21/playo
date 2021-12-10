@@ -29,6 +29,7 @@ app.use(methodOverride('_method'));
 const ejsMate=require('ejs-mate');
 app.engine('ejs', ejsMate);
 
+app.use(express.static(path.join(__dirname,'/public')));
 
 // testing the connection to DB using mongoose model
 // app.get('/makearena', async(req,res)=>{
