@@ -38,6 +38,24 @@ app.use(express.static(path.join(__dirname,'/public')));
 //     res.send(myarena);
 // })
 
+//to catch errors within async functions that express cannot catch on its own.
+function catchAsync(myFunc){
+  return function(req,res,next){
+    myFunc(req,res,next).catch(e=>next(e));
+  }
+}
+
+
+//defining a custom error class
+class myError extends Error{
+  constructor(statusCode,message){
+    super();
+    this.message=message;
+    this.statusCode=statusCode;
+  }
+}
+
+
 app.get("/", (req,res)=>{
   res.render('home');
 })
@@ -49,7 +67,7 @@ app.get("/arenas", (req,res)=>{
 
 
 //list page showing all arenas
-app.get("/arenas/list", async(req,res)=>{
+app.get("/arenas/list", catchAsync(async(req,res)=>{
   // searching for an arena (name or location)
   let noMatch = null; let sstring="";
   if (req.query.search) {
@@ -77,7 +95,7 @@ app.get("/arenas/list", async(req,res)=>{
           }
         });
     }
-})
+}))
 
 //get a form to add new arena
 app.get('/arenas/new', (req,res)=>{
@@ -85,37 +103,50 @@ app.get('/arenas/new', (req,res)=>{
   })
 
 //show page for every arena
-app.get('/arenas/:id', async(req,res)=>{
+app.get('/arenas/:id', catchAsync(async(req,res)=>{
   const arena=await Arena.findById(req.params.id);
   res.render('show.ejs', {arena});
-})
+}))
 
 //submitting new arena details to DB
-app.post('/arenas', async(req,res)=>{
+app.post('/arenas', catchAsync(async(req,res)=>{
   const newArena=new Arena(req.body.arena);
   await newArena.save();
-  res.redirect('/arenas/list');
-})
+  res.redirect(`/arenas/${newArena._id}`);
+}))
 
 //serving edit form for an arena
-app.get('/arenas/:id/edit', async(req,res)=>{
+app.get('/arenas/:id/edit', catchAsync(async(req,res)=>{
   const foundArena=await Arena.findById(req.params.id);
   res.render('edit.ejs', {arena:foundArena});
-})
+}))
 
 
 //submitting the edit form's details to DB
-app.put('/arenas/:id', async(req,res)=>{
+app.put('/arenas/:id', catchAsync(async(req,res)=>{
   const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
   res.redirect(`/arenas/${updatedArena._id}`);
-})
+}))
 
 //deleting an arena
-app.delete('/arenas/:id', async(req,res)=>{
+app.delete('/arenas/:id', catchAsync(async(req,res)=>{
   const deletedArena=await Arena.findByIdAndDelete(req.params.id);
   res.redirect('/arenas/list');
+}))
+
+//catch all for non-existent routes,can handle any request method (get/post/put etc)
+//put below all known routes
+app.all("*", (req,res,next)=>{
+  next (new myError(404,"Page Not Found!"));
 })
 
+//custom error handler
+app.use((err,req,res,next)=>{
+  //extracting data from error & giving defaults
+  const{statusCode=500}=err;
+  if(!err.message){err.message="Oh No! Something went wrong";}
+  res.status(statusCode).render('error.ejs', {err});
+})
 
 app.listen(8080, ()=>{
     console.log("listening on port 8080");

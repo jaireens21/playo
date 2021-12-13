@@ -2,15 +2,27 @@
 
     
 
-    <form method="POST" action="/arenas" class="w-75 mx-auto">
+    <form method="POST" action="/arenas" class="w-75 mx-auto needs-validation" novalidate>
         <h1 class="text-center">Enter Details of New Arena</h1>
         <div class="form-group">
             <label for="name">Enter Name:</label>
-            <input class="form-control" type="text" name="arena[name]" id="name">
+            <input class="form-control" type="text" name="arena[name]" id="name" required>
+            <div class="valid-feedback">
+                Looks good!
+            </div>
+            <div class="invalid-feedback">
+                Required!
+            </div>
         </div>
         <div class="form-group">
             <label for="location">Enter Location:</label>
-            <input class="form-control" type="text" name="arena[location]" id="location">
+            <input class="form-control" type="text" name="arena[location]" id="location" required>
+            <div class="valid-feedback">
+                Looks good!
+            </div>
+            <div class="invalid-feedback">
+                Required!
+            </div>
         </div>
         <div class="form-group">
             
@@ -19,16 +31,34 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text">$</span>
                 </div>
-            <input class="form-control" type="number" name="arena[price]" id="price">
+            <input class="form-control" type="number" name="arena[price]" id="price" required>
+            <div class="valid-feedback">
+                Looks good!
+            </div>
+            <div class="invalid-feedback">
+                Required!
+            </div>
             </div>
         </div>
         <div class="form-group">
             <label for="image">Enter Image URL:</label>
-            <input class="form-control" type="text" name="arena[image]" id="image">
+            <input class="form-control" type="text" name="arena[image]" id="image" required>
+            <div class="valid-feedback">
+                Looks good!
+            </div>
+            <div class="invalid-feedback">
+                Required!
+            </div>
         </div>
         <div class="form-group">
             <label for="description">Enter Description:</label>
-            <textarea class="form-control" name="arena[description]" id="description" rows="3"></textarea>
+            <textarea class="form-control" name="arena[description]" id="description" rows="3" required></textarea>
+            <div class="valid-feedback">
+                Looks good!
+            </div>
+            <div class="invalid-feedback">
+                Required!
+            </div>
         </div>
         <button type="submit" class="btn btn-primary my-3">Submit</button>
         <a href="/arenas/list" class="btn btn-dark">Cancel</a>

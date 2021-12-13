@@ -7,7 +7,10 @@ const arenaSchema= new mongoose.Schema({
         type:String,
         enum:['Badminton','Football','Ice Hockey']
     },
-    price: Number,
+    price: {
+        type:Number,
+        min:0,
+    },
     timing: String,
     image: String,
     
