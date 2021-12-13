@@ -55,6 +55,27 @@ class myError extends Error{
   }
 }
 
+const Joi=require('joi'); //package for data validation before sending data to DB
+
+//middleware for data validation(server-side) using Joi
+const validateArenaData= (req,res,next)=>{
+  const arnSchema=Joi.object({
+    arena:Joi.object({
+      name:Joi.string().required(),
+      location:Joi.string().required(),
+      description:Joi.string().required(),
+      price:Joi.number().required().min(0),
+      image:Joi.string().required(),
+    }).required()
+  })
+  const {error}=arnSchema.validate(req.body);
+  if(error){
+    const msg=error.details.map(e=>e.message).join(',');
+    next(new myError(400, msg)); //call error handler with custom error
+  }else{
+    next();//no error--> go to route handler
+  }
+}
 
 app.get("/", (req,res)=>{
   res.render('home');
@@ -109,7 +130,7 @@ app.get('/arenas/:id', catchAsync(async(req,res)=>{
 }))
 
 //submitting new arena details to DB
-app.post('/arenas', catchAsync(async(req,res)=>{
+app.post('/arenas', validateArenaData, catchAsync(async(req,res)=>{
   const newArena=new Arena(req.body.arena);
   await newArena.save();
   res.redirect(`/arenas/${newArena._id}`);
@@ -123,7 +144,7 @@ app.get('/arenas/:id/edit', catchAsync(async(req,res)=>{
 
 
 //submitting the edit form's details to DB
-app.put('/arenas/:id', catchAsync(async(req,res)=>{
+app.put('/arenas/:id', validateArenaData, catchAsync(async(req,res)=>{
   const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
   res.redirect(`/arenas/${updatedArena._id}`);
 }))

@@ -3,16 +3,16 @@ const arenaSchema= new mongoose.Schema({
     name:String,
     location: String,
     description: String,
-    sports:{
-        type:String,
-        enum:['Badminton','Football','Ice Hockey']
-    },
     price: {
         type:Number,
         min:0,
     },
-    timing: String,
     image: String,
+    sports:{
+        type:String,
+        enum:['Badminton','Football','Ice Hockey']
+    },
+    timing: String,
     
 });
 
