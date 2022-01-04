@@ -24,8 +24,33 @@
                 Required!
             </div>
         </div>
-        <div class="form-group">
+
+        
+
+
+        <div>Sports Offered:
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="Badminton" id="Badminton" name="arena[sports]">
+                <label class="form-check-label" for="Badminton">
+                    Badminton
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="Football" id="Football" name="arena[sports]">
+                <label class="form-check-label" for="Football">
+                    Football
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="Baseball" id="Baseball" name="arena[sports]">
+                <label class="form-check-label" for="Baseball">
+                    Baseball
+                </label>
+            </div>
             
+        </div>
+
+        <div class="form-group">
             <label for="price">Enter price per hour:</label>
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
@@ -40,9 +65,10 @@
             </div>
             </div>
         </div>
+
         <div class="form-group">
-            <label for="image">Enter Image URL:</label>
-            <input class="form-control" type="text" name="arena[image]" id="image" required>
+            <label for="timing">Enter Timings:</label>
+            <input class="form-control" type="text" name="arena[timing]" id="timing" required>
             <div class="valid-feedback">
                 Looks good!
             </div>
@@ -50,6 +76,8 @@
                 Required!
             </div>
         </div>
+
+        
         <div class="form-group">
             <label for="description">Enter Description:</label>
             <textarea class="form-control" name="arena[description]" id="description" rows="3" required></textarea>
@@ -60,6 +88,18 @@
                 Required!
             </div>
         </div>
+
+        <div class="form-group">
+            <label for="image">Enter Image URL:</label>
+            <input class="form-control" type="text" name="arena[image]" id="image" required>
+            <div class="valid-feedback">
+                Looks good!
+            </div>
+            <div class="invalid-feedback">
+                Required!
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-primary my-3">Submit</button>
         <a href="/arenas/list" class="btn btn-dark">Cancel</a>
     </form>

@@ -4,12 +4,17 @@
         <img class="card-img-top" src="<%=arena.image%>/100px180/" alt="">
         <div class="card-body">
           <h5 class="card-title"><%=arena.name%></h5>
-          <p class="card-text"><%=arena.description%></p>
+          <p class="card-text"><%=arena.location%></p>
           <ul class="list-group list-group-flush">
-            <li class="list-group-item"><%=arena.location%></li>
+            <li class="list-group-item"><%=arena.description%></li>
+            <li class="list-group-item">Activities available:
+              <%for (let sport of arena.sports){%>
+                &nbsp; • <%=sport%>
+              <%}%>
+            </li>
             <li class="list-group-item"><span>Price : $ </span> <%=arena.price%> per hour</li>
-            <li class="list-group-item">Activities available:</li>
-            <li class="list-group-item"></li>
+            <li class="list-group-item">Timings: <%=arena.timing%></li>
+            
           </ul>
           <div class="card-body d-flex">
                 <a href="/arenas/<%=arena._id%>/edit" class="btn btn-primary mr-3">Edit</a>

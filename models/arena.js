@@ -8,10 +8,7 @@ const arenaSchema= new mongoose.Schema({
         min:0,
     },
     image: String,
-    sports:{
-        type:String,
-        enum:['Badminton','Football','Ice Hockey']
-    },
+    sports:[String],
     timing: String,
     
 });

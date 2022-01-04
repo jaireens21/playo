@@ -22,6 +22,33 @@
                     Required!
                 </div>
             </div>
+
+            <div>Sports Offered:
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="Badminton" id="Badminton" name="arena[sports]">
+                    <label class="form-check-label" for="Badminton">
+                        Badminton
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="Football" id="Football" name="arena[sports]">
+                    <label class="form-check-label" for="Football">
+                        Football
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="Baseball" id="Baseball" name="arena[sports]">
+                    <label class="form-check-label" for="Baseball">
+                        Baseball
+                    </label>
+                </div>
+               <div class="text-muted fst-italic">Activities previously listed:
+                    <%for (let sport of arena.sports){%>
+                    &nbsp;- <%=sport%>
+                    <%}%>
+                </div> 
+            </div>
+
             <div class="form-group">
                 
                 <label for="price">Enter price per hour:</label>
@@ -38,9 +65,10 @@
                 </div>
                 </div>
             </div>
+
             <div class="form-group">
-                <label for="image">Enter Image URL:</label>
-                <input class="form-control" type="text" name="arena[image]" id="image" value="<%=arena.image%>" required>
+                <label for="timing">Enter Timings:</label>
+                <input class="form-control" type="text" name="arena[timing]" id="timing" value="<%=arena.timing%>" required>
                 <div class="valid-feedback">
                     Looks good!
                 </div>
@@ -48,6 +76,7 @@
                     Required!
                 </div>
             </div>
+
             <div class="form-group">
                 <label for="description">Enter Description:</label>
                 <textarea class="form-control" name="arena[description]" id="description" rows="3" required><%=arena.description%></textarea>
@@ -58,6 +87,18 @@
                     Required!
                 </div>
             </div>
+
+            <div class="form-group">
+                <label for="image">Enter Image URL:</label>
+                <input class="form-control" type="text" name="arena[image]" id="image" value="<%=arena.image%>" required>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+                <div class="invalid-feedback">
+                    Required!
+                </div>
+            </div>
+            
             <button type="submit" class="btn btn-primary my-3">Update</button>
             <a href="/arenas/<%=arena._id%>" class="btn btn-dark">Cancel</a>
         </form>

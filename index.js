@@ -66,6 +66,8 @@ const validateArenaData= (req,res,next)=>{
       description:Joi.string().required(),
       price:Joi.number().required().min(0),
       image:Joi.string().required(),
+      sports:Joi.array().required().single(),
+      timing:Joi.string().required(),
     }).required()
   })
   const {error}=arnSchema.validate(req.body);
