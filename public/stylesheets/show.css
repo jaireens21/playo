@@ -1,0 +1,33 @@
+.showpageElements{
+    display: grid;
+    grid-template-columns:1fr 1fr 1fr; 
+    grid-template-rows:1fr 1fr 1fr;
+    grid-gap:2rem;
+
+    grid-template-areas: 
+    "activities activities timings"
+    "description description location"
+    "controls controls nill";
+}
+
+
+.showpageActivities{
+    grid-area: activities;
+}
+
+.showpageDescription{
+    grid-area: description;
+}
+
+.showpageTimings{
+    grid-area: timings;
+}
+
+.showpageLocation{
+    grid-area: location;
+}
+
+.showpageControls{
+    grid-area: controls;
+    max-height: 5rem;
+}
