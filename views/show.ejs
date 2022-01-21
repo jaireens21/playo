@@ -79,8 +79,15 @@
         LOCATION
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item"><%=arena.location%></li>
+        <li class="list-group-item"><%=arena.location%>
+          <div class="d-flex justify-content-center">
+        
+            <iframe id="gMap"width="100%" height="250" title="Google Maps integration for location" src="https://maps.google.com/maps?q=<%=arena.location%>&t=&z=15&ie=UTF8&iwloc=&output=embed" loading="lazy"></iframe>
+            
+          </div>
+        </li>
       </ul>
+      
     </div>
 
     <!-- power user controls -->
