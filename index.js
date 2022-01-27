@@ -79,6 +79,29 @@ const validateArenaData= (req,res,next)=>{
   }
 }
 
+const session= require('express-session');
+const sessionConfig={
+  secret: 'thisshouldbeabettersecret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { 
+    httpOnly:true,
+    // helps mitigate the risk of client side script accessing the protected cookie
+    maxAge: 1000*60*60*24*7,
+    // cookie expires in a week
+  }
+}
+app.use(session(sessionConfig));
+const flash=require('connect-flash');
+app.use(flash());
+app.use((req,res,next)=>{
+  res.locals.success=req.flash('success');
+  res.locals.error=req.flash('error');
+  next();
+});
+
+
+
 app.get("/", (req,res)=>{
   res.render('home');
 })
@@ -128,6 +151,10 @@ app.get('/arenas/new', (req,res)=>{
 //show page for every arena
 app.get('/arenas/:id', catchAsync(async(req,res)=>{
   const arena=await Arena.findById(req.params.id);
+  if(!arena){
+    req.flash('error', 'Cannot find that arena!');
+    return res.redirect('/arenas/list');
+  }
   res.render('show.ejs', {arena});
 }))
 
@@ -135,12 +162,17 @@ app.get('/arenas/:id', catchAsync(async(req,res)=>{
 app.post('/arenas', validateArenaData, catchAsync(async(req,res)=>{
   const newArena=new Arena(req.body.arena);
   await newArena.save();
+  req.flash('success', 'Successfully created new Arena!');
   res.redirect(`/arenas/${newArena._id}`);
 }))
 
 //serving edit form for an arena
 app.get('/arenas/:id/edit', catchAsync(async(req,res)=>{
   const foundArena=await Arena.findById(req.params.id);
+  if(!foundArena){
+    req.flash('error', 'Cannot find that arena!');
+    return res.redirect('/arenas/list');
+  }
   res.render('edit.ejs', {arena:foundArena});
 }))
 
@@ -148,12 +180,18 @@ app.get('/arenas/:id/edit', catchAsync(async(req,res)=>{
 //submitting the edit form's details to DB
 app.put('/arenas/:id', validateArenaData, catchAsync(async(req,res)=>{
   const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
+  req.flash('success', 'Successfully updated!');
   res.redirect(`/arenas/${updatedArena._id}`);
 }))
 
 //deleting an arena
 app.delete('/arenas/:id', catchAsync(async(req,res)=>{
   const deletedArena=await Arena.findByIdAndDelete(req.params.id);
+  if (!deletedArena){
+    req.flash('error', 'Cannot find that arena!');
+    return res.redirect('/arenas/list');
+  }
+  req.flash('success', 'Arena deleted!');
   res.redirect('/arenas/list');
 }))
 
