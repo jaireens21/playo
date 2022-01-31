@@ -1,0 +1,35 @@
+<%- layout('./layout/boilerplate.ejs') %>
+
+<form method="POST" action="/register" class="w-50 mx-auto needs-validation" novalidate>
+    <h1 class="text-center">Enter details for New User:</h1>
+    <div class="form-group mb-3">
+        <label for="username">Username:</label>
+        <input class="form-control" type="text" name="username" id="username" required>
+        <div class="invalid-feedback">
+            Required!
+        </div>
+    </div>
+    <div class="form-group mb-3">
+        <label for="email">Email id:</label>
+        <input class="form-control" type="email" name="email" id="email" required aria-describedby="emailHelp">
+        <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+        <div class="invalid-feedback">
+            A valid email id is required!
+        </div>
+    </div>
+    <div class="form-group mb-3">
+        <label for="password">Password:</label>
+        <input class="form-control" type="password" name="password" id="password" required aria-describedby="passwordHelpBlock">
+        <div id="passwordHelpBlock" class="form-text">
+            Your password must be 7-20 characters long, contain letters and numbers, and must not contain spaces or emoji.
+          </div>
+        <div class="invalid-feedback">
+            Required!
+        </div>
+    </div>
+     
+
+
+    <button type="submit" class="btn btn-success my-3">Register</button>
+    <a href="/" class="btn btn-dark">Cancel</a>
+</form>

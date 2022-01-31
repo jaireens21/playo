@@ -94,23 +94,79 @@ const sessionConfig={
 app.use(session(sessionConfig));
 const flash=require('connect-flash');
 app.use(flash());
+
+
+const User=require('./models/user');
+const passport=require('passport');
+const LocalStrategy=require('passport-local');
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.use((req,res,next)=>{
+  res.locals.loggedUser=req.user;
   res.locals.success=req.flash('success');
   res.locals.error=req.flash('error');
   next();
 });
 
-
+//middleware for authentication before accessing certain protected routes
+const isLoggedIn= (req,res,next)=>{
+  if (!req.isAuthenticated()){
+    req.session.originalUrl=req.originalUrl;//saving where the user was originally
+    req.flash('error', 'You must be logged in first!');
+    return res.redirect('/login');
+  }
+  next();
+}
 
 app.get("/", (req,res)=>{
   res.render('home');
 })
 
+app.get("/register", (req,res)=>{
+  res.render('register');
+})
+
+app.post("/register", catchAsync(async(req,res,next)=>{
+  try{
+    const {username,email,password}=req.body;
+    const user=new User({username,email});
+    const newUser= await User.register(user,password);
+    req.login(newUser, err=>{ 
+      if (err) return next(err);
+      req.flash('success','Registration successful!');
+      res.redirect('/arenas/list');
+    })
+    
+  }catch(e){
+    req.flash('error', e.message);
+    res.redirect('/register');
+  }
+}))
+
+app.get("/login", (req,res)=>{
+  res.render('login');
+})
+
+app.post("/login",  passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), (req,res)=>{
+  req.flash('success', 'Welcome back!');
+  const redirectTo= req.session.originalUrl || '/arenas/list';
+  delete req.session.originalUrl; //clear the session of this data
+  res.redirect(redirectTo);
+})
+
+app.get('/logout',(req,res)=>{
+  req.logout();
+  req.flash('success', 'Logged out!');
+  res.redirect('/arenas/list');
+})
+
 app.get("/arenas", (req,res)=>{
   res.render('arenas');
 })
-
-
 
 //list page showing all arenas
 app.get("/arenas/list", catchAsync(async(req,res)=>{
@@ -144,7 +200,7 @@ app.get("/arenas/list", catchAsync(async(req,res)=>{
 }))
 
 //get a form to add new arena
-app.get('/arenas/new', (req,res)=>{
+app.get('/arenas/new', isLoggedIn, (req,res)=>{
   res.render('new.ejs');
   })
 
@@ -159,7 +215,7 @@ app.get('/arenas/:id', catchAsync(async(req,res)=>{
 }))
 
 //submitting new arena details to DB
-app.post('/arenas', validateArenaData, catchAsync(async(req,res)=>{
+app.post('/arenas', isLoggedIn, validateArenaData, catchAsync(async(req,res)=>{
   const newArena=new Arena(req.body.arena);
   await newArena.save();
   req.flash('success', 'Successfully created new Arena!');
@@ -167,7 +223,7 @@ app.post('/arenas', validateArenaData, catchAsync(async(req,res)=>{
 }))
 
 //serving edit form for an arena
-app.get('/arenas/:id/edit', catchAsync(async(req,res)=>{
+app.get('/arenas/:id/edit',isLoggedIn, catchAsync(async(req,res)=>{
   const foundArena=await Arena.findById(req.params.id);
   if(!foundArena){
     req.flash('error', 'Cannot find that arena!');
@@ -178,14 +234,14 @@ app.get('/arenas/:id/edit', catchAsync(async(req,res)=>{
 
 
 //submitting the edit form's details to DB
-app.put('/arenas/:id', validateArenaData, catchAsync(async(req,res)=>{
+app.put('/arenas/:id', isLoggedIn, validateArenaData, catchAsync(async(req,res)=>{
   const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
   req.flash('success', 'Successfully updated!');
   res.redirect(`/arenas/${updatedArena._id}`);
 }))
 
 //deleting an arena
-app.delete('/arenas/:id', catchAsync(async(req,res)=>{
+app.delete('/arenas/:id',isLoggedIn, catchAsync(async(req,res)=>{
   const deletedArena=await Arena.findByIdAndDelete(req.params.id);
   if (!deletedArena){
     req.flash('error', 'Cannot find that arena!');
