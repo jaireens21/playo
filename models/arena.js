@@ -10,6 +10,10 @@ const arenaSchema= new mongoose.Schema({
     image: String,
     sports:[String],
     timing: String,
+    owner: {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'User'
+    },
     
 });
 

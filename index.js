@@ -122,6 +122,19 @@ const isLoggedIn= (req,res,next)=>{
   next();
 }
 
+//middleware to check if loggedin user is the owner of the arena
+// to protect edit & delete routes
+const isOwner= async(req,res,next)=>{
+  const {id}=req.params;
+  const arena=await Arena.findById(id);
+  if (!arena.owner.equals(req.user._id)){
+    req.flash('error', 'You do not have permission to do that!');
+    return res.redirect(`/arenas/${id}`);
+  }
+  next();
+}
+
+
 app.get("/", (req,res)=>{
   res.render('home');
 })
@@ -206,7 +219,7 @@ app.get('/arenas/new', isLoggedIn, (req,res)=>{
 
 //show page for every arena
 app.get('/arenas/:id', catchAsync(async(req,res)=>{
-  const arena=await Arena.findById(req.params.id);
+  const arena=await Arena.findById(req.params.id).populate('owner');
   if(!arena){
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas/list');
@@ -217,13 +230,14 @@ app.get('/arenas/:id', catchAsync(async(req,res)=>{
 //submitting new arena details to DB
 app.post('/arenas', isLoggedIn, validateArenaData, catchAsync(async(req,res)=>{
   const newArena=new Arena(req.body.arena);
+  newArena.owner=req.user._id;
   await newArena.save();
   req.flash('success', 'Successfully created new Arena!');
   res.redirect(`/arenas/${newArena._id}`);
 }))
 
 //serving edit form for an arena
-app.get('/arenas/:id/edit',isLoggedIn, catchAsync(async(req,res)=>{
+app.get('/arenas/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
   const foundArena=await Arena.findById(req.params.id);
   if(!foundArena){
     req.flash('error', 'Cannot find that arena!');
@@ -234,14 +248,14 @@ app.get('/arenas/:id/edit',isLoggedIn, catchAsync(async(req,res)=>{
 
 
 //submitting the edit form's details to DB
-app.put('/arenas/:id', isLoggedIn, validateArenaData, catchAsync(async(req,res)=>{
+app.put('/arenas/:id', isLoggedIn, isOwner, validateArenaData, catchAsync(async(req,res)=>{
   const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
   req.flash('success', 'Successfully updated!');
   res.redirect(`/arenas/${updatedArena._id}`);
 }))
 
 //deleting an arena
-app.delete('/arenas/:id',isLoggedIn, catchAsync(async(req,res)=>{
+app.delete('/arenas/:id',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
   const deletedArena=await Arena.findByIdAndDelete(req.params.id);
   if (!deletedArena){
     req.flash('error', 'Cannot find that arena!');

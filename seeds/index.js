@@ -27,6 +27,9 @@ const seedDB=async()=>{
             image: 'https://source.unsplash.com/collection/892620',
             description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis facilis suscipit odit molestiae, aliquid quo, odio fugiat dignissimos quibusdam iure quaerat dolores quam voluptatem! Mollitia earum similique fuga corporis cupiditate.',
             price: Math.floor(Math.random()*20)+10,
+            timing:'10am to 6pm',
+            sports:['Badminton'],
+            owner:'61f83a8672ec37d129dc8341',
         });
         await myarena.save();
     }
