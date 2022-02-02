@@ -56,6 +56,7 @@ class myError extends Error{
 }
 
 const Joi=require('joi'); //package for data validation before sending data to DB
+const passwordComplexity = require("joi-password-complexity"); //package for password complexity check
 
 //middleware for data validation(server-side) using Joi
 const validateArenaData= (req,res,next)=>{
@@ -147,6 +148,21 @@ app.post("/register", catchAsync(async(req,res,next)=>{
   try{
     const {username,email,password}=req.body;
     const user=new User({username,email});
+    
+    //password complexity check
+    const complexityOptions = {
+      min: 8,
+      max: 16,
+      lowerCase: 1,
+      upperCase: 1,
+      numeric: 1,
+      symbol: 1,
+      requirementCount: 4,
+    };
+    const {error}= passwordComplexity(complexityOptions).validate(password);
+    if (error){ 
+      throw new Error('Password does not meet complexity criteria! Please try again!');
+    }
     const newUser= await User.register(user,password);
     req.login(newUser, err=>{ 
       if (err) return next(err);
