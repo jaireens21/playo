@@ -1,3 +1,7 @@
+if(process.env.NODE_ENV!=='production'){
+ require('dotenv').config();
+}
+
 const express=require('express');
 const app=express();
 const path=require('path');
@@ -134,7 +138,6 @@ const isOwner= async(req,res,next)=>{
   }
   next();
 }
-
 
 app.get("/", (req,res)=>{
   res.render('home');
