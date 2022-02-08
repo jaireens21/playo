@@ -1,18 +1,22 @@
-.showpageElements{
+/* .showpageElements{
     display: grid;
-    grid-template-columns:1fr 1fr 1fr; 
-    grid-template-rows:1fr auto 1fr;
+    grid-template-columns:1fr 2fr; 
+    grid-template-rows:auto 1fr 1fr 1fr;
     grid-gap:2rem;
 
     grid-template-areas: 
-    "activities activities timings"
-    "description description location"
-    "controls controls nill";
+    "title images"
+    "activities timings"
+    "description location"
+    "controls controls ";
 }
 
 
 .showpageActivities{
     grid-area: activities;
+}
+.showpageTitle{
+    grid-area: title;
 }
 
 .showpageDescription{
@@ -26,11 +30,16 @@
 .showpageLocation{
     grid-area: location;
 }
+.showpageImages{
+    grid-area: images;
+}
+
+
 
 .showpageControls{
     grid-area: controls;
     max-height: 5rem;
-}
+} */
 
 #gMap{
     margin-top: 15px;
@@ -39,8 +48,14 @@
     margin-right: 5px;
 }
 
-.showPageImages{
-    max-width:75vw;
-    margin-left:auto;
+.showpageImages img{
+    min-height: 300px;
+    width:100%;
+    max-width: 100%;
 }
+
+.showpageLocation{
+    min-width: 300px;
+}
+
 
