@@ -6,6 +6,7 @@ const express=require('express');
 const app=express();
 const path=require('path');
 
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -50,39 +51,9 @@ function catchAsync(myFunc){
 }
 
 
-//defining a custom error class
-class myError extends Error{
-  constructor(statusCode,message){
-    super();
-    this.message=message;
-    this.statusCode=statusCode;
-  }
-}
+const myError=require('./myError'); //custom error class
 
-const Joi=require('joi'); //package for data validation before sending data to DB
 const passwordComplexity = require("joi-password-complexity"); //package for password complexity check
-
-//middleware for data validation(server-side) using Joi
-const validateArenaData= (req,res,next)=>{
-  const arnSchema=Joi.object({
-    arena:Joi.object({
-      name:Joi.string().required(),
-      location:Joi.string().required(),
-      description:Joi.string().required(),
-      price:Joi.number().required().min(0),
-      image:Joi.string().required(),
-      sports:Joi.array().required().single(),
-      timing:Joi.string().required(),
-    }).required()
-  })
-  const {error}=arnSchema.validate(req.body);
-  if(error){
-    const msg=error.details.map(e=>e.message).join(',');
-    next(new myError(400, msg)); //call error handler with custom error
-  }else{
-    next();//no error--> go to route handler
-  }
-}
 
 const session= require('express-session');
 const sessionConfig={
@@ -117,28 +88,37 @@ app.use((req,res,next)=>{
   next();
 });
 
-//middleware for authentication before accessing certain protected routes
-const isLoggedIn= (req,res,next)=>{
-  if (!req.isAuthenticated()){
-    req.session.originalUrl=req.originalUrl;//saving where the user was originally
-    req.flash('error', 'You must be logged in first!');
-    return res.redirect('/login');
-  }
-  next();
-}
+const {isLoggedIn, isOwner, validateArenaData}=require('./middleware.js'); //importing middleware 
 
-//middleware to check if loggedin user is the owner of the arena
-// to protect edit & delete routes
-const isOwner= async(req,res,next)=>{
-  const {id}=req.params;
-  const arena=await Arena.findById(id);
-  if (!arena.owner.equals(req.user._id)){
-    req.flash('error', 'You do not have permission to do that!');
-    return res.redirect(`/arenas/${id}`);
-  }
-  next();
-}
 
+//image uploading to cloudinary
+const multer = require('multer'); //for image uploading
+const {cloudinary,storage}= require("./cloudinary"); 
+const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
+const whitelist = [ //allowed formats of images
+  'image/png',
+  'image/jpeg',
+  'image/jpg'
+];
+const upload = multer({  
+  storage,  //upload to cloudinary
+  limits: {fileSize: maxSize, files:3},//limit to 3 image uploads at once
+  fileFilter: (req, file, cb) => { //checking if file extension is an allowed format
+      if (!whitelist.includes(file.mimetype)){
+        cb(null, false);
+        return cb(new Error('Only .png, .jpg and .jpeg formats allowed!'));
+      }
+      else{
+        cb(null, true);
+      } 
+  }
+}); 
+
+
+
+
+
+//ALL ROUTES
 app.get("/", (req,res)=>{
   res.render('home');
 })
@@ -247,9 +227,10 @@ app.get('/arenas/:id', catchAsync(async(req,res)=>{
 }))
 
 //submitting new arena details to DB
-app.post('/arenas', isLoggedIn, validateArenaData, catchAsync(async(req,res)=>{
+app.post('/arenas', isLoggedIn, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
   const newArena=new Arena(req.body.arena);
   newArena.owner=req.user._id;
+  newArena.images= req.files.map( f=>( {url:f.path, filename:f.filename}) ); //details of uploaded images(available on req.files thanks to multer) being added to the arena
   await newArena.save();
   req.flash('success', 'Successfully created new Arena!');
   res.redirect(`/arenas/${newArena._id}`);
@@ -295,6 +276,8 @@ app.use((err,req,res,next)=>{
   //extracting data from error & giving defaults
   const{statusCode=500}=err;
   if(!err.message){err.message="Oh No! Something went wrong";}
+  if (err.code === 'LIMIT_FILE_SIZE')  //instanceof multer.MulterError
+    {err.message = 'File Size is too large. Allowed file size is 2MB';}
   res.status(statusCode).render('error.ejs', {err});
 })
 
