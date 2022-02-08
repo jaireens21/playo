@@ -248,8 +248,19 @@ app.get('/arenas/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
 
 
 //submitting the edit form's details to DB
-app.put('/arenas/:id', isLoggedIn, isOwner, validateArenaData, catchAsync(async(req,res)=>{
+app.put('/arenas/:id', isLoggedIn, isOwner, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
   const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
+  const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
+  updatedArena.images.push(...imgs); 
+  await updatedArena.save();
+
+  //removing selected images, filenames avbl on req.body.deleteImages[]
+  if(req.body.deleteImages){
+    for(let filename of req.body.deleteImages){
+      await cloudinary.uploader.destroy(filename); 
+    }
+    await updatedArena.updateOne( {$pull: {images: {filename: {$in: req.body.deleteImages}}}});  
+  }
   req.flash('success', 'Successfully updated!');
   res.redirect(`/arenas/${updatedArena._id}`);
 }))

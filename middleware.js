@@ -27,6 +27,7 @@ module.exports.isOwner= async(req,res,next)=>{
 
 //middleware for data validation(server-side) using Joi schema
 const arnSchema=Joi.object({
+  deleteImages:Joi.array().single(), //added bcoz validation was not letting it go
     arena:Joi.object({
       name:Joi.string().required(),
       location:Joi.string().required(),

@@ -24,7 +24,7 @@ const seedDB=async()=>{
         const myarena=new Arena({
             name:`${part1[Math.floor(Math.random()*part1.length)]} ${part2[Math.floor(Math.random()*part2.length)]}`,
             location:`${cities[Math.floor(Math.random()*cities.length)]}`,
-            image: 'https://source.unsplash.com/collection/892620',
+            images:[{url:'https://res.cloudinary.com/dvhs0ay92/image/upload/v1644340988/bookmysport/default_frueyn.jpg',filename:'bookmysport/default_frueyn'}],
             description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis facilis suscipit odit molestiae, aliquid quo, odio fugiat dignissimos quibusdam iure quaerat dolores quam voluptatem! Mollitia earum similique fuga corporis cupiditate.',
             price: Math.floor(Math.random()*20)+10,
             timing:'10am to 6pm',
