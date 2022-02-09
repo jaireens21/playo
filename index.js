@@ -120,7 +120,7 @@ const upload = multer({
 
 //ALL ROUTES
 app.get("/", (req,res)=>{
-  res.render('home');
+  res.render('landing');
 })
 
 app.get("/register", (req,res)=>{

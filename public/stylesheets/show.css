@@ -49,7 +49,7 @@
 }
 
 .showpageImages img{
-    min-height: 300px;
+    min-height: 250px;
     width:100%;
     max-width: 100%;
 }
@@ -65,3 +65,22 @@
 }
 
 
+.jumbotron {
+    background: linear-gradient(rgba(70, 70, 70, 0.35), rgba(70, 70, 70, 0.35)),
+      url(https://images.unsplash.com/photo-1572218663709-a0d210adfb41?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    min-height: 400px;
+    
+    max-width: 100%;
+    margin: 0 0 20px 0;
+}
+  
+.jumbotronText {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.card-img-overlay{
+margin-top: 10vh;
+}
