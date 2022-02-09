@@ -1,33 +1,33 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">BookMySport</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav">
-            <a class="nav-link" href="/arenas">Find an arena</a>
-            <% if(loggedUser){ %> 
-              <a class="nav-link" href="/arenas/new">Add Arena</a>
-            <% } %> 
-            <a class="nav-link" href="/arenas/list">All arenas</a>
-            <a class="nav-link" href="#">Offers</a>
-            <a class="nav-link" href="#">Partner with Us</a>
-            </div>
+  <div class="container-fluid">
+    
+    <a class="navbar-brand" href="/">BookMySport</a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-            <div class="navbar-nav ms-auto">
-               <% if(!loggedUser){ %> 
-                <a class="nav-link" href="/login">Login</a>
-                <a class="nav-link" href="/register">Register</a>
-                <% } else { %> 
-                <a class="nav-link" href="/logout">Logout</a>
-                <% } %> 
-                
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
 
-                
-            </div>
-            
-            
-        </div>
+      <div class="navbar-nav">
+        <a class="nav-link" href="/arenas">Find an arena</a>
+        <% if(loggedUser){ %> 
+          <a class="nav-link" href="/arenas/new">Add Arena</a>
+        <% } %> 
+        <a class="nav-link" href="/arenas/list">All arenas</a>
+        <a class="nav-link" href="#">Offers</a>
+        <a class="nav-link" href="#">Partner with Us</a>
+      </div>
+
+      <div class="navbar-nav ms-auto">
+        <% if(!loggedUser){ %> 
+        <a class="nav-link" href="/login">Login</a>
+        <a class="nav-link" href="/register">Register</a>
+        <% } else { %> 
+        <a class="nav-link" href="/logout">Logout</a>
+        <% } %>     
+      </div>
+        
     </div>
-  </nav>
+  </div>
+</nav>
