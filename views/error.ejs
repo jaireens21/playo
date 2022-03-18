@@ -5,7 +5,9 @@
     <div class="alert alert-danger text-center" role="alert">
         <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i>&nbsp; ERROR <%=err.statusCode%>: <%=err.message%></h4>
         <!-- remove stack in production -->
+        <% if(process.env.NODE_ENV!=='production'){ %> 
         <p><%=err.stack %></p>
+        <% } %> 
     </div>
     
     

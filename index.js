@@ -5,6 +5,8 @@ if(process.env.NODE_ENV!=='production'){
 const express=require('express');
 const app=express();
 const path=require('path');
+const mongoSanitize = require('express-mongo-sanitize'); //preventing mongo injection
+const helmet=require('helmet'); //auto setting http headers for security
 
 
 app.set('view engine', 'ejs');
@@ -27,6 +29,8 @@ const Arena=require('./models/arena');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(mongoSanitize());
+// app.use(helmet({contentSecurityPolicy: false}));
 
 const methodOverride= require('method-override');
 app.use(methodOverride('_method'));
@@ -57,14 +61,16 @@ const passwordComplexity = require("joi-password-complexity"); //package for pas
 
 const session= require('express-session');
 const sessionConfig={
+  name:'parleg',
   secret: 'thisshouldbeabettersecret',
   resave: false,
   saveUninitialized: true,
   cookie: { 
-    httpOnly:true,
-    // helps mitigate the risk of client side script accessing the protected cookie
-    maxAge: 1000*60*60*24*7,
-    // cookie expires in a week
+    httpOnly:true,// helps mitigate the risk of client side script accessing the protected cookie
+    
+    //secure:true, //use when deploying, httpS will be reqd to set cookies
+
+    maxAge: 1000*60*60*24*7,     // cookie expires in a week
   }
 }
 app.use(session(sessionConfig));
@@ -182,7 +188,7 @@ app.get("/arenas", (req,res)=>{
 
 //list page showing all arenas
 app.get("/arenas/list", catchAsync(async(req,res)=>{
-  // searching for an arena (name or location)
+  // searching for an arena (name or location or sports)
   let noMatch = null; let sstring="";
   if (req.query.search) {
     sstring=req.query.search;
@@ -191,7 +197,7 @@ app.get("/arenas/list", catchAsync(async(req,res)=>{
         console.log(err);
       } else {
             let regex=new RegExp(req.query.search, 'gi');
-            let result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)));
+            let result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)||place.sports.join('').match(regex)));
             
             if (result.length < 1) {
             noMatch = req.query.search;
