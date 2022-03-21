@@ -23,11 +23,19 @@ mongoose.connect('mongodb://localhost:27017/playo',{
 .catch( (err)=>{
     console.log("connection error:");
     console.log(err);
+    //interrogate the error, if it's something you can recover from, let it be.
+    //if the exception is fatal, exit with prejudice
+    //https://stackoverflow.com/questions/27139289/handle-database-error-when-using-connect-mongo
+    
+    process.exit(1);
+    //exit status code 1 - Uncaught Fatal Exception
+    //Node normally exits with a 0 status code 
 });
 
 const Arena=require('./models/arena');
+const Booking=require('./models/booking');
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended:true}));
 app.use(express.json());
 app.use(mongoSanitize());
 // app.use(helmet({contentSecurityPolicy: false}));
@@ -100,6 +108,7 @@ const {isLoggedIn, isOwner, validateArenaData}=require('./middleware.js'); //imp
 //image uploading to cloudinary
 const multer = require('multer'); //for image uploading
 const {cloudinary,storage}= require("./cloudinary"); 
+const booking = require('./models/booking');
 const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
 const whitelist = [ //allowed formats of images
   'image/png',
@@ -119,7 +128,6 @@ const upload = multer({
       } 
   }
 }); 
-
 
 
 
@@ -195,6 +203,8 @@ app.get("/arenas/list", catchAsync(async(req,res)=>{
     Arena.find({}, function(err, allArenas) {
       if (err) {
         console.log(err);
+        req.flash('error', err.message);
+        res.redirect('/');
       } else {
             let regex=new RegExp(req.query.search, 'gi');
             let result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)||place.sports.join('').match(regex)));
@@ -209,6 +219,8 @@ app.get("/arenas/list", catchAsync(async(req,res)=>{
         Arena.find({}, function(err, allArenas) {
           if (err) {
             console.log(err);
+            req.flash('error', err.message);
+            res.redirect('/');
           } else {
               
             res.render("list.ejs", {allArenas,noMatch,sstring});
@@ -229,8 +241,40 @@ app.get('/arenas/:id', catchAsync(async(req,res)=>{
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas/list');
   }
+  // find all bookings with arenaId and send to show.ejs for rendering
   res.render('show.ejs', {arena});
 }))
+
+
+//booking page for every arena
+app.get('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
+  // const today=Date.now();
+  // const todayInWords=new Date(today).toDateString();
+  const arena=await Arena.findById(req.params.id);
+  if(!arena){
+    req.flash('error', 'Cannot find that arena!');
+    return res.redirect('/arenas/list');
+  }
+
+  // add code to find all bookings with arenaId and send to book.ejs for rendering
+
+  res.render('book.ejs', {arena});
+}))
+
+//create booking for arena
+app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
+  const arena=await Arena.findById(req.params.id);
+  const newBooking=new Booking(req.body);
+  newBooking.arenaId=req.params.id;
+  newBooking.playerId=req.user._id;
+  //may need to edit above line of code when we create seperate PLAYER ids & profiles
+
+  await newBooking.save();
+
+  res.render('booked.ejs', {newBooking,arena});
+  
+} ))
+
 
 //submitting new arena details to DB
 app.post('/arenas', isLoggedIn, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{

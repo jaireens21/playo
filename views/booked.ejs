@@ -1,0 +1,17 @@
+<%- layout('./layout/boilerplate.ejs') %>
+
+  
+  
+<div class="showpageElements w-75 mx-auto mt-5">
+
+    <h1>Successfully booked!</h1>
+    <h2>Arena: <%=arena.name%>, <%=arena.location%></h2>
+    <h2>Booking details:</h2>
+    <ul>
+        <li>Date: <%=newBooking.date%></li>
+        <li>Time: <%=newBooking.time%>:00 hrs</li>
+        <li>Sport: <%=newBooking.sport%></li>
+    </ul>
+    <p><%=newBooking%></p>
+
+</div>

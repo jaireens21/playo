@@ -1,0 +1,37 @@
+<%- layout('./layout/boilerplate.ejs') %>
+
+  
+  
+<div class="showpageElements w-75 mx-auto mt-5">
+
+    <h1>welcome to booking page</h1>
+    <h2><%=arena.name%></h2>
+    <h3><%=arena.location%></h3>
+     
+    <form method="POST" action="/arenas/<%=arena._id%>/book">
+        <label for="sport-select">Select Sport: </label>
+        <select id="sport-select" name="sport">
+            <option value="">Please Choose an Option</option>
+            <option value="badminton">Badminton</option>
+            <option value="football">Football</option>
+            <option value="cricket">Cricket</option>
+        </select>
+
+        <label for="date-select">Select date:</label>
+        <input type="date" id="date-select" name="date" max="2022-12-31">
+
+        <label for="time-select">Select Time-Slot: </label>
+        <select id="time-select" name="time">
+            <option value="">Please Choose an Option</option>
+            <% for(let i=6; i<=21; ++i){%>
+            <option value=<%=i%>><%=i%>:00 hrs</option>
+            <% } %>
+        </select>
+
+        <button type="submit">Submit</button>
+    </form>
+  
+  
+  
+    
+</div>
