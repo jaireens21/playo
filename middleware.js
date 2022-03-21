@@ -34,7 +34,8 @@ const arnSchema=Joi.object({
       description:Joi.string().required(),
       price:Joi.number().required().min(0),
       sports:Joi.array().required().single(),
-      timing:Joi.string().required(),
+      startTiming:Joi.number().required().min(1).max(23),
+      endTiming:Joi.number().required().min(1).max(23),
     }).required()
   })
 module.exports.validateArenaData= (req,res,next)=>{

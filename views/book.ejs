@@ -12,9 +12,10 @@
         <label for="sport-select">Select Sport: </label>
         <select id="sport-select" name="sport">
             <option value="">Please Choose an Option</option>
-            <option value="badminton">Badminton</option>
-            <option value="football">Football</option>
-            <option value="cricket">Cricket</option>
+            <%for (let sport of arena.sports){%>
+                <option value=<%=sport%>> <%=sport%> </option>
+            <%}%>
+            
         </select>
 
         <label for="date-select">Select date:</label>

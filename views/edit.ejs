@@ -5,9 +5,6 @@
             <div class="form-group mb-3">
                 <label for="name">Enter Name:</label>
                 <input class="form-control" type="text" name="arena[name]" id="name" value="<%=arena.name%>" required>
-                <div class="valid-feedback">
-                    Looks good!
-                </div>
                 <div class="invalid-feedback">
                     Required!
                 </div>
@@ -15,9 +12,6 @@
             <div class="form-group mb-3">
                 <label for="location">Enter Location:</label>
                 <input class="form-control" type="text" name="arena[location]" id="location" value="<%=arena.location%>" required>
-                <div class="valid-feedback">
-                    Looks good!
-                </div>
                 <div class="invalid-feedback">
                     Required!
                 </div>
@@ -92,11 +86,13 @@
             </div>
 
             <div class="form-group mb-3">
-                <label for="timing">Enter Timings:</label>
-                <input class="form-control" type="text" name="arena[timing]" id="timing" value="<%=arena.timing%>" required>
-                <div class="valid-feedback">
-                    Looks good!
+                <label for="startTiming">Enter Start Timings :</label>
+                <input class="form-control" type="number"  min="1" max="23"  name="arena[startTiming]" id="startTiming" value="<%=arena.startTiming%>" required>
+                <div class="invalid-feedback">
+                    Required!
                 </div>
+                <label for="endTiming">Enter End Timings :</label>
+                <input class="form-control" type="number"  min="1" max="23" name="arena[endTiming]" id="endTiming" value="<%=arena.endTiming%>" required>
                 <div class="invalid-feedback">
                     Required!
                 </div>
@@ -105,9 +101,7 @@
             <div class="form-group mb-3">
                 <label for="description">Enter Description:</label>
                 <textarea class="form-control" name="arena[description]" id="description" rows="3" required><%=arena.description%></textarea>
-                <div class="valid-feedback">
-                    Looks good!
-                </div>
+                
                 <div class="invalid-feedback">
                     Required!
                 </div>

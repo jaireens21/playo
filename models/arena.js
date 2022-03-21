@@ -29,7 +29,24 @@ const arenaSchema= new mongoose.Schema({
     },
     images: [ImageSchema],  //an array of objects, each with url & filename
     sports:[String],
-    timing: String,
+    sportBookings:[
+        {   sport:String, 
+            bookings:[
+                {   date:String, 
+                    time:String, 
+                    playerId:{
+                        type:mongoose.Schema.Types.ObjectId,
+                        ref:'User'
+                        // change to player after making player logins
+                    },
+                    _id: false,
+                }
+            ],
+            _id: false,
+        }
+    ],
+    startTiming: Number,
+    endTiming: Number,
     owner: {
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'

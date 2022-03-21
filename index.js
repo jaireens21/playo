@@ -263,24 +263,39 @@ app.get('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
 
 //create booking for arena
 app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
+  
+  // let oldBookings=await Booking.find({arenaId:req.params.id});
+  // console.log(oldBookings);
+  // res.send();
+  
   const arena=await Arena.findById(req.params.id);
-  const newBooking=new Booking(req.body);
-  newBooking.arenaId=req.params.id;
-  newBooking.playerId=req.user._id;
+  const {sport,date,time}=req.body;
+  let newBooking={date,time,playerId:req.user._id};
+  arena.sportBookings.find(booking=>booking.sport===sport).bookings.push(newBooking);
+  await arena.save();
+  
+  // const newBooking=new Booking(req.body);
+  // newBooking.arenaId=req.params.id;
+  // newBooking.playerId=req.user._id;
   //may need to edit above line of code when we create seperate PLAYER ids & profiles
 
-  await newBooking.save();
+  // await newBooking.save();
 
-  res.render('booked.ejs', {newBooking,arena});
+  res.render('booked.ejs', {arena});
   
 } ))
 
 
 //submitting new arena details to DB
 app.post('/arenas', isLoggedIn, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
+  const {sports}=req.body.arena;
   const newArena=new Arena(req.body.arena);
   newArena.owner=req.user._id;
   newArena.images= req.files.map( f=>( {url:f.path, filename:f.filename}) ); //details of uploaded images(available on req.files thanks to multer) being added to the arena
+  for(let sport of sports){
+    newArena.sportBookings.push({sport: sport, bookings:[]});
+  }
+ 
   await newArena.save();
   req.flash('success', 'Successfully created new Arena!');
   res.redirect(`/arenas/${newArena._id}`);

@@ -87,8 +87,13 @@
         </div>
 
         <div class="form-group mb-3">
-            <label for="timing">Enter Timings:</label>
-            <input class="form-control" type="text" name="arena[timing]" id="timing" required>
+            <label for="startTiming">Enter Start Timings:</label>
+            <input class="form-control" type="number"  min="1" max="23" name="arena[startTiming]" id="startTiming" required>
+            <div class="invalid-feedback">
+                Required!
+            </div>
+            <label for="endTiming">Enter End Timings:</label>
+            <input class="form-control" type="number" min="1" max="23"  name="arena[endTiming]" id="endTiming" required>
             <div class="invalid-feedback">
                 Required!
             </div>
