@@ -2,11 +2,13 @@
 
   
   
-<div class="showpageElements w-75 mx-auto mt-5">
+<div class="showpageElements w-75 mx-auto mt-5" style="text-align: center;">
 
     <h1>Successfully booked!</h1>
-    <h2>Arena: <%=arena.name%>, <%=arena.location%></h2>
-    <h2>Booking details:</h2>
-    
+    <h2><%=arena.name%>, <%=arena.location%></h2>
+    <h2>for <%=sport%> on <%=date%>,<%=time%>:00 hrs  </h2>
+
+    <a href="/arenas/<%=arena._id%>" class="btn btn-warning mt-5 ">Back to arena</a>
+    <a href="/arenas/list" class="btn btn-dark mt-5 mx-3">All Arenas</a>
 
 </div>

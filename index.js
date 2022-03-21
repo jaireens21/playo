@@ -248,17 +248,15 @@ app.get('/arenas/:id', catchAsync(async(req,res)=>{
 
 //booking page for every arena
 app.get('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
-  // const today=Date.now();
-  // const todayInWords=new Date(today).toDateString();
+  
   const arena=await Arena.findById(req.params.id);
   if(!arena){
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas/list');
   }
+  const today=new Date().toLocaleDateString('en-CA');
 
-  // add code to find all bookings with arenaId and send to book.ejs for rendering
-
-  res.render('book.ejs', {arena});
+  res.render('book.ejs', {arena,today});
 }))
 
 //create booking for arena
@@ -281,7 +279,7 @@ app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
 
   // await newBooking.save();
 
-  res.render('booked.ejs', {arena});
+  res.render('booked.ejs', {arena,sport,date,time});
   
 } ))
 
