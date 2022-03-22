@@ -4,11 +4,11 @@
   
 <div class="w-50 mx-auto mt-5">
 
-    <h1>welcome to booking page</h1>
+    <h1>Search for Available Time Slots</h1>
     <h2><%=arena.name%></h2>
     <h3><%=arena.location%></h3>
      
-    <form method="POST" action="/arenas/<%=arena._id%>/book" class="needs-validation" novalidate>
+    <form method="POST" action="/arenas/<%=arena._id%>/book/check" class="needs-validation mt-5" novalidate>
         <div class="form-group mb-3">
             <label class="form-label" for="sport-select">Select Sport: </label>
             <select class="form-control" id="sport-select" name="sport" required>
@@ -17,37 +17,40 @@
                     <option value=<%=sport%>> <%=sport%> </option>
                 <%}%>
             </select>
-            <div class="valid-feedback">
-                Looks good!
-            </div>
+            
         </div>
         
         <div class="form-group mb-3">
             <label class="form-label" for="date-select">Select Date:</label>
             <input class="form-control" type="date" id="date-select" name="date" min=<%=today%> max="2022-12-31" required>
-            <div class="valid-feedback">
-                Looks good!
-            </div>
+            
         </div>
+        
 
-
-        <div class="form-group mb-3">
-            <label class="form-label" for="time-select">Select Time: </label>
-            <select class="form-control" id="time-select" name="time" required>
-                <option value="">Please Choose an Option</option>
-                <% for(let i=arena.startTiming; i<arena.endTiming; ++i){%>
-                <option value=<%=i%>><%=i%>:00 hrs</option>
-                <% } %>
-            </select>
-            <div class="valid-feedback">
-                Looks good!
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Submit</button>
-        <a href="/arenas/<%=arena._id%>" class="btn btn-dark">Cancel</a>
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a href="/arenas/<%=arena._id%>" class="btn btn-dark">Go Back</a>
 
     </form>
-
+    
     
 </div>
+
+<!-- <script>
+    let sport=document.querySelector("#sport-select");
+    let date=document.querySelector("#date-select");
+    console.log(sport,date,arena);
+
+    function seeReservations(){
+        
+        let reservations= arena.sportBookings.find(booking=>booking.sport===sport).bookings.filter(b=>b.date===date);   
+        console.log(reservations);
+    }
+
+    sport.addEventListener("change", seeReservations);
+
+    // sport.addEventListener("change", ()=>{
+    //     date.addEventListener("change", seeReservations);
+    // })
+    
+
+</script> -->

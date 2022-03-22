@@ -33,7 +33,7 @@ mongoose.connect('mongodb://localhost:27017/playo',{
 });
 
 const Arena=require('./models/arena');
-const Booking=require('./models/booking');
+
 
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
@@ -248,16 +248,39 @@ app.get('/arenas/:id', catchAsync(async(req,res)=>{
 
 //booking page for every arena
 app.get('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
-  
   const arena=await Arena.findById(req.params.id);
   if(!arena){
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas/list');
   }
   const today=new Date().toLocaleDateString('en-CA');
-
   res.render('book.ejs', {arena,today});
 }))
+
+
+//checking booking availability
+app.post('/arenas/:id/book/check', isLoggedIn, catchAsync(async(req,res)=>{
+  const today=new Date().toLocaleDateString('en-CA');
+  const arena=await Arena.findById(req.params.id);
+  const {sport,date}=req.body;
+  let reservations= arena.sportBookings.find(booking=>booking.sport===sport).bookings.filter(b=>b.date===date);
+  // console.log(reservations);
+  let reservedTimeSlots=reservations.map(r=>r.time);
+  // console.log(reservedTimeSlots);
+  let availableTimeSlots=[];
+  let i=arena.startTiming;
+  while(i<arena.endTiming){
+    if (!reservedTimeSlots.includes(i)){
+      availableTimeSlots.push(i);
+    }
+    ++i;
+  }
+  // console.log(availableTimeSlots);
+   
+  res.render('booking.ejs', {arena,sport,date,availableTimeSlots});
+  
+} ))
+
 
 //create booking for arena
 app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
