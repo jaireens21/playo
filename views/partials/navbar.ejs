@@ -11,7 +11,7 @@
 
       <div class="navbar-nav">
         <a class="nav-link" href="/arenas">Find an arena</a>
-        <% if(loggedUser){ %> 
+        <% if(loggedUser && loggedUser.role==="owner"){ %> 
           <a class="nav-link" href="/arenas/new">Add Arena</a>
         <% } %> 
         <a class="nav-link" href="/arenas/list">All arenas</a>

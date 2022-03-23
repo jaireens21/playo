@@ -102,7 +102,7 @@ app.use((req,res,next)=>{
   next();
 });
 
-const {isLoggedIn, isOwner, validateArenaData, validateFormData, validateUserFormData}=require('./middleware.js'); //importing middleware 
+const {isLoggedIn, isOwner, hasOwnerRole, validateArenaData, validateFormData, validateUserFormData}=require('./middleware.js'); //importing middleware 
 
 
 //image uploading to cloudinary
@@ -229,7 +229,7 @@ app.get("/arenas/list", catchAsync(async(req,res)=>{
 }))
 
 //get a form to add new arena
-app.get('/arenas/new', isLoggedIn, (req,res)=>{
+app.get('/arenas/new', isLoggedIn, hasOwnerRole, (req,res)=>{
   res.render('new.ejs');
   })
 
@@ -307,7 +307,7 @@ app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
 
 
 //submitting new arena details to DB
-app.post('/arenas', isLoggedIn, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
+app.post('/arenas', isLoggedIn, hasOwnerRole, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
   const {sports}=req.body.arena;
   const newArena=new Arena(req.body.arena);
   newArena.owner=req.user._id;

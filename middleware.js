@@ -26,6 +26,15 @@ module.exports.isOwner= async(req,res,next)=>{
     next();
 }
 
+//middleware to check if loggedin user has the role of owner 
+// to protect add new arena GET ,POST routes
+module.exports.hasOwnerRole= async(req,res,next)=>{
+  if (req.user.role!=="owner"){
+    req.flash('error', 'You do not have permission to do that!');
+    return res.redirect('/arenas/list');
+  }
+  next();
+}
 
 
 //middleware for data validation(server-side) while making a new arena, using Joi schema
