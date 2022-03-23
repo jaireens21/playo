@@ -5,6 +5,8 @@ if(process.env.NODE_ENV!=='production'){
 const express=require('express');
 const app=express();
 const path=require('path');
+const crypto=require('crypto');//for generating resetPasswordToken
+const nodemailer = require("nodemailer"); //for sending password reset email
 const mongoSanitize = require('express-mongo-sanitize'); //preventing mongo injection
 const helmet=require('helmet'); //auto setting http headers for security
 
@@ -189,6 +191,124 @@ app.get('/logout',(req,res)=>{
   res.redirect('/arenas/list');
 })
 
+//FORGOT PASSWORD routes
+//render form to get user's email id
+app.get('/forgot', (req,res)=>{
+  if (req.isAuthenticated()) { //user is alreay logged in
+    return res.redirect('/');
+  }
+  res.render('forgot.ejs'); 
+})
+
+//send reset email to user's email id
+app.post('/forgot', catchAsync(async(req,res)=>{
+  const user=await User.findOne({email:req.body.email});
+  if(!user){
+    req.flash('error','user does not exist! please signup!');
+    return res.redirect('/register');
+  }
+  const token=crypto.randomBytes(20).toString('hex');
+  user.resetPasswordToken=token;
+  user.resetPasswordExpires=Date.now() + 3600000; //1 hour
+  await user.save();
+  const transporter = nodemailer.createTransport({
+    service:'gmail',
+    auth:{
+      user:process.env.EMAIL_ADDRESS,
+      pass:process.env.EMAIL_PASSWORD
+      //gmail needs 'app specific password' to be generated for this kind of acccess
+    },
+  });
+  const mailOptions = {
+    to: user.email,
+    from: 'jaireen.s21@gmail.com',
+    subject: 'Password Reset Link',
+    text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
+    'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+    `http://localhost:8080/reset/${token}\n\n'` +
+    'If you did not request this, please ignore this email and your password will remain unchanged.\n'
+  };
+  console.log('sending email');
+
+  transporter.sendMail(mailOptions,(err)=>{
+    if(err){
+      req.flash('error', 'there is an error!');
+      console.log(err);
+      res.redirect('/forgot');
+    }else{
+      //res.send(`Email sent to ${user.email}. Follow instructions given in the email.`);
+      res.render('forgotemail.ejs', {email: req.body.email});
+    }
+  })
+}))
+
+//form to get new password (when user clicks on reset link in email)
+app.get('/reset/:token', catchAsync(async(req,res)=>{
+  let user= await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
+  if(!user){
+    req.flash('error', 'Password reset token is invalid or has expired.');
+    res.redirect('/forgot');
+  }
+  res.render('reset.ejs', { user});
+}))
+
+//update user's password
+app.put('/reset/:token', catchAsync(async(req,res)=>{
+  const {password}=req.body;
+  let user= await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
+  if(!user){
+    req.flash('error', 'Password reset token is invalid or has expired.');
+    res.redirect('/forgot');
+  }
+  //password complexity check
+  const complexityOptions = {
+    min: 8,
+    max: 16,
+    lowerCase: 1,
+    upperCase: 1,
+    numeric: 1,
+    symbol: 1,
+    requirementCount: 4,
+  };
+  const {error}= passwordComplexity(complexityOptions).validate(password);
+  if (error){ 
+    req.flash('error', 'Password does not meet complexity criteria! Please try again!');
+    res.redirect(`/reset/${user.resetPasswordToken}`);
+  }
+  user.setPassword(password, (err,user)=>{ //passportlocal method to set user password
+    if(err){return next(err);}
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    user.save();
+  });
+  console.log('user updated!');
+  req.flash('success', 'Password has been reset.');
+  res.redirect('/login');
+  //send email to inform that password has changed
+  const transporter = nodemailer.createTransport({
+    service:'gmail',
+    auth:{
+      user:process.env.EMAIL_ADDRESS,
+      pass:process.env.EMAIL_PASSWORD
+    },
+  });
+  const mailOptions = {
+    to: user.email,
+    from: 'jaireen.s21@gmail.com',
+    subject: 'Your password has been changed',
+    text: 'Hello,\n\n' +
+    `This is a confirmation that the password for your account ${user.email} has been changed.\n`
+  };
+  transporter.sendMail(mailOptions,(err)=>{
+    if(err){
+      console.log(err);
+    }
+  })
+}))
+
+
+
+
 app.get("/arenas", (req,res)=>{
   res.render('arenas');
 })
@@ -267,7 +387,7 @@ app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(asyn
   
   if (!arena.sports.includes(sport)){
     req.flash('error','This arena does not offer that sport!');
-    return res.redirect('/arenas/list');
+    return res.redirect(`/arenas/${arena._id}`);
   }
   const today=new Date().toLocaleDateString('en-CA');
   //MISSING code to ensure date (coming from the form) is greater than today's date

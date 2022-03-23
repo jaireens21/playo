@@ -1,0 +1,16 @@
+<%- layout('./layout/boilerplate.ejs') %>
+
+<form method="POST" action="/forgot" class="w-50 mx-auto needs-validation" novalidate>
+    <h1 class="text-center">Forgot Password</h1>
+    <div class="form-group mb-3">
+        <label for="email">Email:</label>
+        <input id="email" class="form-control" type="email" name="email" required>
+        <div class="invalid-feedback">
+            Required!
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-success my-3">Reset Password</button>
+    
+</form>
+
