@@ -102,13 +102,12 @@ app.use((req,res,next)=>{
   next();
 });
 
-const {isLoggedIn, isOwner, validateArenaData}=require('./middleware.js'); //importing middleware 
+const {isLoggedIn, isOwner, validateArenaData, validateFormData}=require('./middleware.js'); //importing middleware 
 
 
 //image uploading to cloudinary
 const multer = require('multer'); //for image uploading
 const {cloudinary,storage}= require("./cloudinary"); 
-const booking = require('./models/booking');
 const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
 const whitelist = [ //allowed formats of images
   'image/png',
@@ -241,7 +240,6 @@ app.get('/arenas/:id', catchAsync(async(req,res)=>{
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas/list');
   }
-  // find all bookings with arenaId and send to show.ejs for rendering
   res.render('show.ejs', {arena});
 }))
 
@@ -259,12 +257,24 @@ app.get('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
 
 
 //checking booking availability
-app.post('/arenas/:id/book/check', isLoggedIn, catchAsync(async(req,res)=>{
-  const today=new Date().toLocaleDateString('en-CA');
+app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(async(req,res)=>{
   const arena=await Arena.findById(req.params.id);
+  if(!arena){
+    req.flash('error', 'Cannot find that arena!');
+    return res.redirect('/arenas/list');
+  }
   const {sport,date}=req.body;
+  
+  if (!arena.sports.includes(sport)){
+    req.flash('error','This arena does not offer that sport!');
+    return res.redirect('/arenas/list');
+  }
+  const today=new Date().toLocaleDateString('en-CA');
+  //MISSING code to ensure date (coming from the form) is greater than today's date
+  //if it is less than todays date, reset it to todays date 
+
   let reservations= arena.sportBookings.find(booking=>booking.sport===sport).bookings.filter(b=>b.date===date);
-  // console.log(reservations);
+  //console.log(reservations);
   let reservedTimeSlots=reservations.map(r=>r.time);
   // console.log(reservedTimeSlots);
   let availableTimeSlots=[];
@@ -284,24 +294,13 @@ app.post('/arenas/:id/book/check', isLoggedIn, catchAsync(async(req,res)=>{
 
 //create booking for arena
 app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
-  
-  // let oldBookings=await Booking.find({arenaId:req.params.id});
-  // console.log(oldBookings);
-  // res.send();
-  
   const arena=await Arena.findById(req.params.id);
   const {sport,date,time}=req.body;
   let newBooking={date,time,playerId:req.user._id};
-  arena.sportBookings.find(booking=>booking.sport===sport).bookings.push(newBooking);
-  await arena.save();
-  
-  // const newBooking=new Booking(req.body);
-  // newBooking.arenaId=req.params.id;
-  // newBooking.playerId=req.user._id;
   //may need to edit above line of code when we create seperate PLAYER ids & profiles
 
-  // await newBooking.save();
-
+  arena.sportBookings.find(booking=>booking.sport===sport).bookings.push(newBooking);
+  await arena.save();
   res.render('booked.ejs', {arena,sport,date,time});
   
 } ))

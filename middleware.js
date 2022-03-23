@@ -25,7 +25,7 @@ module.exports.isOwner= async(req,res,next)=>{
     next();
 }
 
-//middleware for data validation(server-side) using Joi schema
+//middleware for data validation(server-side) for arena, using Joi schema
 const arnSchema=Joi.object({
   deleteImages:Joi.array().single(), //added bcoz validation was not letting it go
     arena:Joi.object({
@@ -40,6 +40,19 @@ const arnSchema=Joi.object({
   })
 module.exports.validateArenaData= (req,res,next)=>{
     const {error}=arnSchema.validate(req.body);
+    if(error){
+        const msg=error.details.map(e=>e.message).join(',');
+        next(new myError(400, msg)); //call error handler with custom error
+    }else next();//no error--> go to next function 
+}
+
+//middleware for data validation(server-side) while booking an arena, using Joi schema
+const formSchema=Joi.object({
+  sport:Joi.string().required(),
+  date:Joi.date().required(),
+})
+module.exports.validateFormData= (req,res,next)=>{
+    const {error}=formSchema.validate(req.body);
     if(error){
         const msg=error.details.map(e=>e.message).join(',');
         next(new myError(400, msg)); //call error handler with custom error
