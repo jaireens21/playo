@@ -37,7 +37,6 @@ const arenaSchema= new mongoose.Schema({
                     playerId:{
                         type:mongoose.Schema.Types.ObjectId,
                         ref:'User'
-                        // change to player after making player logins
                     },
                     // _id: false,
                 }

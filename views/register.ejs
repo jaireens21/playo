@@ -27,8 +27,17 @@
             Required!
         </div>
     </div>
-     
 
+    <div class="form-check">
+        <input class="form-check-input" id="player" type="radio" name="role" value="player"  checked required >
+        <label class="form-check-label" for="player">Player</label>
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" id="owner" type="radio" name="role" value="owner"  required>
+        <label class="form-check-label" for="owner">Arena Owner</label>
+        <div class="invalid-feedback">Must select either Player or Arena Owner</div>
+      </div>
+     
 
     <button type="submit" class="btn btn-success my-3">Register</button>
     <a href="/" class="btn btn-dark">Cancel</a>

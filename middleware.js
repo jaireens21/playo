@@ -5,6 +5,7 @@ const myError=require('./myError');
 //middleware for authentication before accessing certain protected routes
 module.exports.isLoggedIn= (req,res,next)=>{
     if (!req.isAuthenticated()){
+      //req.isAuthenticated() will return true if user is logged in
       req.session.originalUrl=req.originalUrl;//saving where the user was originally
       req.flash('error', 'You must be logged in first!');
       return res.redirect('/login');
@@ -25,7 +26,9 @@ module.exports.isOwner= async(req,res,next)=>{
     next();
 }
 
-//middleware for data validation(server-side) for arena, using Joi schema
+
+
+//middleware for data validation(server-side) while making a new arena, using Joi schema
 const arnSchema=Joi.object({
   deleteImages:Joi.array().single(), //added bcoz validation was not letting it go
     arena:Joi.object({
@@ -41,10 +44,12 @@ const arnSchema=Joi.object({
 module.exports.validateArenaData= (req,res,next)=>{
     const {error}=arnSchema.validate(req.body);
     if(error){
-        const msg=error.details.map(e=>e.message).join(',');
-        next(new myError(400, msg)); //call error handler with custom error
+      const msg=error.details.map(e=>e.message).join(',');
+      next(new myError(400, msg)); //call error handler with custom error
     }else next();//no error--> go to next function 
 }
+
+
 
 //middleware for data validation(server-side) while booking an arena, using Joi schema
 const formSchema=Joi.object({
@@ -54,7 +59,28 @@ const formSchema=Joi.object({
 module.exports.validateFormData= (req,res,next)=>{
     const {error}=formSchema.validate(req.body);
     if(error){
-        const msg=error.details.map(e=>e.message).join(',');
-        next(new myError(400, msg)); //call error handler with custom error
+      const msg=error.details.map(e=>e.message).join(',');
+      next(new myError(400, msg)); //call error handler with custom error
     }else next();//no error--> go to next function 
+}
+
+
+
+//middleware for data validation(server-side) while making a new user, using Joi schema
+const userformSchema=Joi.object({
+  username:Joi.string().required(),
+  password: Joi.string().required(),
+  //password complexity being checked by passwordComplexity npm package in index.js
+  email:Joi.string().email({ minDomainSegments: 2, tlds: { allow: true } }).required(),
+  //above email complexity check will trigger an error page instead of flash & redirect
+  // email:Joi.string().required(),
+  role:Joi.string().required(),
+})
+module.exports.validateUserFormData= (req,res,next)=>{
+    const {error}=userformSchema.validate(req.body);
+    if(error){
+      const msg=error.details.map(e=>e.message).join(',');
+      req.flash('error', msg);
+      return res.redirect('/register');
+    }else next(); 
 }

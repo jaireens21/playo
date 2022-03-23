@@ -102,7 +102,7 @@ app.use((req,res,next)=>{
   next();
 });
 
-const {isLoggedIn, isOwner, validateArenaData, validateFormData}=require('./middleware.js'); //importing middleware 
+const {isLoggedIn, isOwner, validateArenaData, validateFormData, validateUserFormData}=require('./middleware.js'); //importing middleware 
 
 
 //image uploading to cloudinary
@@ -140,10 +140,10 @@ app.get("/register", (req,res)=>{
   res.render('register');
 })
 
-app.post("/register", catchAsync(async(req,res,next)=>{
+app.post("/register", validateUserFormData, catchAsync(async(req,res,next)=>{
   try{
-    const {username,email,password}=req.body;
-    const user=new User({username,email});
+    const {username,email,password,role}=req.body;
+    const user=new User({username,email,role});
     
     //password complexity check
     const complexityOptions = {

@@ -1,5 +1,5 @@
 //linked to boilerplate.ejs via script tag
-//alerts & stops uploading of a large file
+//alerts & pre-emptively stops uploading of a large file
 
 //https://stackoverflow.com/questions/46140918/can-we-limit-upload-file-size-without-uploading-it-fully/46141188#46141188
 
