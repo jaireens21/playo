@@ -32,7 +32,7 @@ const arenaSchema= new mongoose.Schema({
     sportBookings:[
         {   sport:String, 
             bookings:[
-                {   date:String, 
+                {   date:Date, 
                     time:Number, 
                     playerId:{
                         type:mongoose.Schema.Types.ObjectId,

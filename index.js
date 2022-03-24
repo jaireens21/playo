@@ -357,8 +357,8 @@ app.get('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas/list');
   }
-  const today=new Date().toLocaleDateString('en-CA');
-  res.render('book.ejs', {arena,today});
+  const todayString=new Date().toLocaleDateString('en-CA');
+  res.render('book.ejs', {arena,todayString});
 }))
 
 
@@ -369,20 +369,27 @@ app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(asyn
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas/list');
   }
-  const {sport,date}=req.body;
-  
+  const {sport}=req.body;
   if (!arena.sports.includes(sport)){
     req.flash('error','This arena does not offer that sport!');
     return res.redirect(`/arenas/${arena._id}`);
   }
-  const today=new Date().toLocaleDateString('en-CA');
-  //MISSING code to ensure date (coming from the form) is greater than today's date
-  //if it is less than todays date, reset it to todays date 
 
-  let reservations= arena.sportBookings.find(booking=>booking.sport===sport).bookings.filter(b=>b.date===date);
-  //console.log(reservations);
+  let dateParts=req.body.date.split("-");
+  let date=new Date(dateParts[0],dateParts[1]-1,dateParts[2],"06","00");
+  //creating a date object with default time set as 6:00 hrs keeping EST vs GMT(UTC) (4 hrs) & dayLightSavings (+ or - 1 hr) in mind so that date doesnot switch by -1 when generating localeTimeString
+
+  let today=new Date(); today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
+  if(date<today){
+    date=today;
+  }
+  //Ensuring that the date (coming from the form) is greater than today's date
+  //If it is less than today's date, then reset it to today's date 
+  //console.log("date", date);
+  let reservations= arena.sportBookings.find(booking=>booking.sport===sport).bookings.filter(b=>b.date.toLocaleDateString()===date.toLocaleDateString());
+  //console.log("reservations", reservations);
   let reservedTimeSlots=reservations.map(r=>r.time);
-  // console.log(reservedTimeSlots);
+  //console.log("reserved time slots", reservedTimeSlots);
   let availableTimeSlots=[];
   let i=arena.startTiming;
   while(i<arena.endTiming){
@@ -392,8 +399,9 @@ app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(asyn
     ++i;
   }
   // console.log(availableTimeSlots);
+  let dateString=date.toLocaleDateString("en-CA");
    
-  res.render('booking.ejs', {arena,sport,date,availableTimeSlots});
+  res.render('booking.ejs', {arena,sport,dateString,availableTimeSlots});
   
 } ))
 
@@ -401,13 +409,15 @@ app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(asyn
 //create booking for arena
 app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
   const arena=await Arena.findById(req.params.id);
-  const {sport,date,time}=req.body;
+  const {sport,time}=req.body;
+  let dateParts=req.body.date.split("-");
+  let date=new Date(dateParts[0],dateParts[1]-1,dateParts[2],"06","00");
   let newBooking={date,time,playerId:req.user._id};
-  //may need to edit above line of code when we create seperate PLAYER ids & profiles
-
+  
   arena.sportBookings.find(booking=>booking.sport===sport).bookings.push(newBooking);
   await arena.save();
-  res.render('booked.ejs', {arena,sport,date,time});
+  let dateString=date.toLocaleDateString("en-CA");
+  res.render('booked.ejs', {arena,sport,dateString,time});
   
 } ))
 
