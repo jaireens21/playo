@@ -105,6 +105,7 @@ app.use((req,res,next)=>{
 });
 
 const {isLoggedIn, isOwner, hasOwnerRole, validateArenaData, validateFormData, validateUserFormData}=require('./middleware.js'); //importing middleware 
+const createDateObj=require('./public/javascripts/createDateObj');
 
 
 //image uploading to cloudinary
@@ -358,7 +359,8 @@ app.get('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
     return res.redirect('/arenas/list');
   }
   const todayString=new Date().toLocaleDateString('en-CA');
-  res.render('book.ejs', {arena,todayString});
+  const endDateString=arena.endDate.toLocaleDateString('en-CA');
+  res.render('book.ejs', {arena,todayString, endDateString});
 }))
 
 
@@ -430,7 +432,7 @@ app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
     to: req.user.email,
     from: 'jaireen.s21@gmail.com',
     subject: 'BOOKMYSPORTS : Your booking is confirmed',
-    text: 'Hello,\n\n' +
+    text: `Hello ${req.user.username},\n\n` +
     `This is a confirmation email. The following arena has been booked for BOOKMYSPORTS account ${req.user.email}:\n\n`+ `Arena: ${arena.name}, ${arena.location}\n` + `Date: ${dateString} \n` + `Time: ${time}:00 hours \n\n` + 'Have a good day!\n'
   };
   transporter.sendMail(mailOptions,(err)=>{
@@ -444,15 +446,22 @@ app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
 
 //submitting new arena details to DB
 app.post('/arenas', isLoggedIn, hasOwnerRole, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
-  const {sports}=req.body.arena;
-  const newArena=new Arena(req.body.arena);
+  const {name,location,description,price,sports,startTiming,endTiming}=req.body.arena;
+  const newArena=new Arena({name,location,description,price,sports,startTiming,endTiming});
   newArena.owner=req.user._id;
-  newArena.images= req.files.map( f=>( {url:f.path, filename:f.filename}) ); //details of uploaded images(available on req.files thanks to multer) being added to the arena
+  newArena.images= req.files.map( f=>( {url:f.path, filename:f.filename}) ); 
+  //details of uploaded images(available on req.files thanks to multer) being added to the arena
   for(let sport of sports){
     newArena.sportBookings.push({sport: sport, bookings:[]});
   }
- 
+  let {startDate,endDate}=req.body.arena;
+  startDate=createDateObj(startDate);
+  endDate=createDateObj(endDate);
+  newArena.startDate=startDate;
+  newArena.endDate=endDate;
+
   await newArena.save();
+
   req.flash('success', 'Successfully created new Arena!');
   res.redirect(`/arenas/${newArena._id}`);
 }))

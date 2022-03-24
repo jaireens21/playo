@@ -86,20 +86,14 @@
             </div>
         </div>
 
-        <div class="form-group mb-3">
-            <label for="startTiming">Enter Start Timings:</label>
-            <input class="form-control" type="number"  min="1" max="23" name="arena[startTiming]" id="startTiming" required>
+        <!-- <div class="form-group mb-3">
+            <label for="timing">Enter Timings:</label>
+            <input class="form-control" type="text"  name="arena[timing]" id="timing" required>
             <div class="invalid-feedback">
                 Required!
             </div>
-            <label for="endTiming">Enter End Timings:</label>
-            <input class="form-control" type="number" min="1" max="23"  name="arena[endTiming]" id="endTiming" required>
-            <div class="invalid-feedback">
-                Required!
-            </div>
-        </div>
+        </div> -->
 
-        
         <div class="form-group mb-3">
             <label for="description">Enter Description:</label>
             <textarea class="form-control" name="arena[description]" id="description" rows="3" required></textarea>
@@ -123,6 +117,31 @@
             </div>
         </div>
 
+        <h2>BOOKING DETAILS</h2>
+        <div class="form-group mb-3">
+            <label for="startDate">Enter the first date to accept Bookings:</label>
+            <input class="form-control" type="date"  name="arena[startDate]" id="startDate" required>
+            <div class="invalid-feedback">
+                Required!
+            </div>
+            <label for="endDate">Enter the last date to accept Bookings:</label>
+            <input class="form-control" type="date" name="arena[endDate]" id="endDate" required>
+            <div class="invalid-feedback">
+                Required!
+            </div>
+        </div>
+        <div class="form-group mb-3">
+            <label for="startTiming">Enter the time of the First Booking of the day (in 24 hour format):</label>
+            <input class="form-control" type="number"  min="1" max="23" name="arena[startTiming]" id="startTiming" required>
+            <div class="invalid-feedback">
+                Required!
+            </div>
+            <label for="endTiming">Enter the time of the Last Booking of the day (in 24 hour format):</label>
+            <input class="form-control" type="number" min="1" max="23"  name="arena[endTiming]" id="endTiming" required>
+            <div class="invalid-feedback">
+                Required!
+            </div>
+        </div>
         
         <button type="submit" class="btn btn-primary my-3">Submit</button>
         <a href="/arenas/list" class="btn btn-dark">Cancel</a>

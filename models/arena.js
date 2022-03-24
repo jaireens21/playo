@@ -46,6 +46,8 @@ const arenaSchema= new mongoose.Schema({
     ],
     startTiming: Number,
     endTiming: Number,
+    startDate:Date,
+    endDate:Date,
     owner: {
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'
