@@ -192,7 +192,7 @@ app.get('/logout',(req,res)=>{
 })
 
 //FORGOT PASSWORD routes
-//render form to get user's email id
+//render a form to get user's email id
 app.get('/forgot', (req,res)=>{
   if (req.isAuthenticated()) { //user is alreay logged in
     return res.redirect('/');
@@ -242,7 +242,7 @@ app.post('/forgot', catchAsync(async(req,res)=>{
   })
 }))
 
-//form to get new password (when user clicks on reset link in email)
+//render a form to get new password (when user clicks on reset link in email)
 app.get('/reset/:token', catchAsync(async(req,res)=>{
   let user= await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
   if(!user){
@@ -260,22 +260,8 @@ app.put('/reset/:token', catchAsync(async(req,res)=>{
     req.flash('error', 'Password reset token is invalid or has expired.');
     res.redirect('/forgot');
   }
-  //password complexity check
-  const complexityOptions = {
-    min: 8,
-    max: 16,
-    lowerCase: 1,
-    upperCase: 1,
-    numeric: 1,
-    symbol: 1,
-    requirementCount: 4,
-  };
-  const {error}= passwordComplexity(complexityOptions).validate(password);
-  if (error){ 
-    req.flash('error', 'Password does not meet complexity criteria! Please try again!');
-    res.redirect(`/reset/${user.resetPasswordToken}`);
-  }
-  user.setPassword(password, (err,user)=>{ //passportlocal method to set user password
+  //password complexity check implemented using js on the reset page.
+  user.setPassword(password, (err,user)=>{ //a passportlocal method to set user password
     if(err){return next(err);}
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
