@@ -222,8 +222,8 @@ app.post('/forgot', catchAsync(async(req,res)=>{
   const mailOptions = {
     to: user.email,
     from: 'jaireen.s21@gmail.com',
-    subject: 'Password Reset Link',
-    text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
+    subject: 'BOOKMYSPORTS: Password Reset Link',
+    text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account on BOOKMYSPORTS.\n\n' +
     'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
     `http://localhost:8080/reset/${token}\n\n'` +
     'If you did not request this, please ignore this email and your password will remain unchanged.\n'
@@ -281,9 +281,9 @@ app.put('/reset/:token', catchAsync(async(req,res)=>{
   const mailOptions = {
     to: user.email,
     from: 'jaireen.s21@gmail.com',
-    subject: 'Your password has been changed',
+    subject: 'BOOKMYSPORTS : Your password has been changed',
     text: 'Hello,\n\n' +
-    `This is a confirmation that the password for your account ${user.email} has been changed.\n`
+    `This is a confirmation that the password for your account ${user.email} on BOOKMYSPORTS has been changed.\n`
   };
   transporter.sendMail(mailOptions,(err)=>{
     if(err){
@@ -418,6 +418,26 @@ app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
   await arena.save();
   let dateString=date.toLocaleDateString("en-CA");
   res.render('booked.ejs', {arena,sport,dateString,time});
+  //send confirmation email to inform that arena has been booked
+  const transporter = nodemailer.createTransport({
+    service:'gmail',
+    auth:{
+      user:process.env.EMAIL_ADDRESS,
+      pass:process.env.EMAIL_PASSWORD
+    },
+  });
+  const mailOptions = {
+    to: req.user.email,
+    from: 'jaireen.s21@gmail.com',
+    subject: 'BOOKMYSPORTS : Your booking is confirmed',
+    text: 'Hello,\n\n' +
+    `This is a confirmation email. The following arena has been booked for BOOKMYSPORTS account ${req.user.email}:\n\n`+ `Arena: ${arena.name}, ${arena.location}\n` + `Date: ${dateString} \n` + `Time: ${time}:00 hours \n\n` + 'Have a good day!\n'
+  };
+  transporter.sendMail(mailOptions,(err)=>{
+    if(err){
+      console.log(err);
+    }
+  })
   
 } ))
 
