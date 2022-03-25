@@ -1,9 +1,8 @@
 const express= require ('express');
-const router=express.Router();
+const router=express.Router({mergeParams: true});//make sure to add mergeParams:true to preserve the req.params values from the parent router
 
 const catchAsync=require('../utils/catchAsync.js');
 const createDateObj=require('../utils/createDateObj');
-const myError=require('../utils/myError');
 
 const Arena=require('../models/arena');
 
@@ -12,7 +11,7 @@ const {isLoggedIn, isOwner, hasOwnerRole, validateArenaData, validateFormData, v
 
 //image uploading to cloudinary
 const multer = require('multer'); //for image uploading
-const {cloudinary,storage}= require("./cloudinary"); 
+const {cloudinary,storage}= require('../cloudinary'); //folder:cloudinary,file:index.js
 const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
 const whitelist = [ //allowed formats of images
   'image/png',
@@ -35,7 +34,7 @@ const upload = multer({
 
 
 //list page showing all arenas
-router.get("/arenas", catchAsync(async(req,res)=>{
+router.get('/', catchAsync(async(req,res)=>{
     // searching for an arena (name or location or sports)
     let noMatch = null; let sstring="";
     if (req.query.search) {
@@ -52,7 +51,7 @@ router.get("/arenas", catchAsync(async(req,res)=>{
               if (result.length < 1) {
               noMatch = req.query.search;
               }
-              res.render("list.ejs", {allArenas: result, noMatch,sstring});
+              res.render('list.ejs', {allArenas: result, noMatch,sstring});
           }
       });
    } else {
@@ -62,7 +61,7 @@ router.get("/arenas", catchAsync(async(req,res)=>{
               req.flash('error', err.message);
               res.redirect('/');
             } else {
-             res.render("list.ejs", {allArenas,noMatch,sstring});
+             res.render('list.ejs', {allArenas,noMatch,sstring});
             }
           });
       }
@@ -70,21 +69,27 @@ router.get("/arenas", catchAsync(async(req,res)=>{
   
 
 //serve a form to add new arena
-router.get('/arenas/new', isLoggedIn, hasOwnerRole, (req,res)=>{
+router.get('/new', isLoggedIn, hasOwnerRole, (req,res)=>{
     res.render('new.ejs');
 })
 
 
-//saving a new arena to DB
-router.post('/arenas', isLoggedIn, hasOwnerRole, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
+//save a new arena to DB
+router.post('/', isLoggedIn, hasOwnerRole, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
     const {name,location,description,price,sports,startTiming,endTiming}=req.body.arena;
     const newArena=new Arena({name,location,description,price,sports,startTiming,endTiming});
     newArena.owner=req.user._id;
     newArena.images= req.files.map( f=>( {url:f.path, filename:f.filename}) ); 
     //details of uploaded images(available on req.files thanks to multer) being added to the arena
-    for(let sport of sports){
-      newArena.sportBookings.push({sport: sport, bookings:[]});
+    
+    if (typeof(sports)==="string"){ //when arena offers only 1 sport
+      newArena.sportBookings.push({sport: sports, bookings:[]});
+    }else {
+      for(let sport of sports){
+        newArena.sportBookings.push({sport: sport, bookings:[]});
+      }
     }
+   
     let {startDate,endDate}=req.body.arena;
     startDate=createDateObj(startDate);
     endDate=createDateObj(endDate);
@@ -97,22 +102,22 @@ router.post('/arenas', isLoggedIn, hasOwnerRole, upload.array('image'), validate
     res.redirect(`/arenas/${newArena._id}`);
 }))
 
-//serving edit form for an arena
-router.get('/arenas/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
+//serve edit form for an arena
+router.get('/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
     const foundArena=await Arena.findById(req.params.id);
     if(!foundArena){
       req.flash('error', 'Cannot find that arena!');
       return res.redirect('/arenas');
     }
-    let startDateString=foundArena.startDate.toLocaleDateString("en-CA");
-    let endDateString=foundArena.endDate.toLocaleDateString("en-CA");
+    let startDateString=foundArena.startDate.toLocaleDateString('en-CA');
+    let endDateString=foundArena.endDate.toLocaleDateString('en-CA');
     res.render('edit.ejs', {arena:foundArena, startDateString, endDateString});
 }))
 
 
 
-router.route('/arenas/:id')
-        //show page for every arena
+router.route('/:id')
+        //show details of an arena
     .get(catchAsync(async(req,res)=>{
         const arena=await Arena.findById(req.params.id).populate('owner');
         if(!arena){
@@ -122,7 +127,7 @@ router.route('/arenas/:id')
         res.render('show.ejs', {arena});
     }))
 
-        //saving edited arena's details
+        //save edited arena's details
     .put(isLoggedIn, isOwner, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
         const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
         const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
@@ -139,7 +144,7 @@ router.route('/arenas/:id')
         res.redirect(`/arenas/${updatedArena._id}`);
     }))
 
-        //deleting an arena
+        //delete an arena
     .delete(isLoggedIn, isOwner, catchAsync(async(req,res)=>{
         const deletedArena=await Arena.findByIdAndDelete(req.params.id);
         if (!deletedArena){
@@ -149,3 +154,6 @@ router.route('/arenas/:id')
         req.flash('success', 'Arena deleted!');
         res.redirect('/arenas');
     }))
+
+
+module.exports=router;
