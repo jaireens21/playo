@@ -57,27 +57,9 @@ app.use(express.static(path.join(__dirname,'/public')));
 //     res.send(myarena);
 // })
 
-//to catch errors within async functions that express cannot catch on its own.
-function catchAsync(myFunc){
-  return function(req,res,next){
-    myFunc(req,res,next).catch(e=>next(e));
-  }
-}
-//create a date object using string input
-function createDateObj(str){
-  let dateParts=[];
-  if(str.indexOf("-")!==-1){
-    dateParts=str.split("-");
-  }else if (str.indexOf("/")!==-1){
-    dateParts=str.split("/");
-  }
-  
-  let date=new Date(dateParts[0],dateParts[1]-1,dateParts[2],"06","00");
-  //creating a date object with default time set as local EST 6:00 hrs. We are keeping in mind EST vs GMT(UTC) (4 hrs) & dayLightSavings (+ or - 1 hr), so that date doesnot switch by -1 when generating localeTimeString
-  return date;
-}
-
-const myError=require('./myError'); //custom error class
+const catchAsync=require('./utils/catchAsync');
+const createDateObj=require('./utils/createDateObj');
+const myError=require('./utils/myError'); //custom error class
 
 const passwordComplexity = require("joi-password-complexity"); //package for password complexity check
 
@@ -178,7 +160,7 @@ app.post("/register", validateUserFormData, catchAsync(async(req,res,next)=>{
     req.login(newUser, err=>{ 
       if (err) return next(err);
       req.flash('success','Registration successful!');
-      res.redirect('/arenas/list');
+      res.redirect('/arenas');
     })
     
   }catch(e){
@@ -193,7 +175,7 @@ app.get("/login", (req,res)=>{
 
 app.post("/login",  passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), (req,res)=>{
   req.flash('success', 'Welcome back!');
-  const redirectTo= req.session.originalUrl || '/arenas/list';
+  const redirectTo= req.session.originalUrl || '/arenas';
   delete req.session.originalUrl; //clear the session of this data
   res.redirect(redirectTo);
 })
@@ -201,7 +183,7 @@ app.post("/login",  passport.authenticate('local', { failureRedirect: '/login', 
 app.get('/logout',(req,res)=>{
   req.logout();
   req.flash('success', 'Logged out!');
-  res.redirect('/arenas/list');
+  res.redirect('/arenas');
 })
 
 //FORGOT PASSWORD routes
@@ -306,14 +288,8 @@ app.put('/reset/:token', catchAsync(async(req,res)=>{
 }))
 
 
-
-
-app.get("/arenas", (req,res)=>{
-  res.render('arenas');
-})
-
 //list page showing all arenas
-app.get("/arenas/list", catchAsync(async(req,res)=>{
+app.get("/arenas", catchAsync(async(req,res)=>{
   // searching for an arena (name or location or sports)
   let noMatch = null; let sstring="";
   if (req.query.search) {
@@ -350,14 +326,14 @@ app.get("/arenas/list", catchAsync(async(req,res)=>{
 //get a form to add new arena
 app.get('/arenas/new', isLoggedIn, hasOwnerRole, (req,res)=>{
   res.render('new.ejs');
-  })
+})
 
 //show page for every arena
 app.get('/arenas/:id', catchAsync(async(req,res)=>{
   const arena=await Arena.findById(req.params.id).populate('owner');
   if(!arena){
     req.flash('error', 'Cannot find that arena!');
-    return res.redirect('/arenas/list');
+    return res.redirect('/arenas');
   }
   res.render('show.ejs', {arena});
 }))
@@ -368,7 +344,7 @@ app.get('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
   const arena=await Arena.findById(req.params.id);
   if(!arena){
     req.flash('error', 'Cannot find that arena!');
-    return res.redirect('/arenas/list');
+    return res.redirect('/arenas');
   }
   const todayString=new Date().toLocaleDateString('en-CA');
   const startDateString=arena.startDate.toLocaleDateString('en-CA');
@@ -383,7 +359,7 @@ app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(asyn
   const arena=await Arena.findById(req.params.id);
   if(!arena){
     req.flash('error', 'Cannot find that arena!');
-    return res.redirect('/arenas/list');
+    return res.redirect('/arenas');
   }
 
   const {sport}=req.body;
@@ -412,10 +388,10 @@ app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(asyn
     if (str===dateStr){
       return booking;
     }});
-  console.log("reservations", reservations);
+  // console.log("reservations", reservations);
 
   let reservedTimeSlots=reservations.map(r=>r.time);
-    console.log("reserved time slots", reservedTimeSlots);
+    // console.log("reserved time slots", reservedTimeSlots);
 
   let availableTimeSlots=[];
   let i=arena.startTiming;
@@ -497,7 +473,7 @@ app.get('/arenas/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
   const foundArena=await Arena.findById(req.params.id);
   if(!foundArena){
     req.flash('error', 'Cannot find that arena!');
-    return res.redirect('/arenas/list');
+    return res.redirect('/arenas');
   }
   let startDateString=foundArena.startDate.toLocaleDateString("en-CA");
   let endDateString=foundArena.endDate.toLocaleDateString("en-CA");
@@ -528,10 +504,10 @@ app.delete('/arenas/:id',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
   const deletedArena=await Arena.findByIdAndDelete(req.params.id);
   if (!deletedArena){
     req.flash('error', 'Cannot find that arena!');
-    return res.redirect('/arenas/list');
+    return res.redirect('/arenas');
   }
   req.flash('success', 'Arena deleted!');
-  res.redirect('/arenas/list');
+  res.redirect('/arenas');
 }))
 
 //catch all for non-existent routes,can handle any request method (get/post/put etc)

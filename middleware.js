@@ -1,6 +1,6 @@
 const Joi=require('joi');
 const Arena=require('./models/arena');
-const myError=require('./myError');
+const myError=require('./utils/myError');
 
 //middleware for authentication before accessing certain protected routes
 module.exports.isLoggedIn= (req,res,next)=>{
@@ -31,7 +31,7 @@ module.exports.isOwner= async(req,res,next)=>{
 module.exports.hasOwnerRole= async(req,res,next)=>{
   if (req.user.role!=="owner"){
     req.flash('error', 'You do not have permission to do that!');
-    return res.redirect('/arenas/list');
+    return res.redirect('/arenas');
   }
   next();
 }
