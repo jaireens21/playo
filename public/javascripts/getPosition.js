@@ -1,13 +1,17 @@
 //selecting the locateMe button
-const btn = document.querySelector('.navigate'); 
+const locationBtn = document.querySelector('.navigate'); 
+const latitudeInput = document.getElementById('latitudeInput'); 
+const longitudeInput = document.getElementById('longitudeInput'); 
 
 function getCoords(){
-  console.log("clicked on locate me");
+  //console.log("clicked on locate me");
   navigator.geolocation.getCurrentPosition((pos) => {
-    console.log(pos.coords);})
+    console.log(pos.coords);
+  latitudeInput.innerHTML=pos.coords.latitude;
+  longitudeInput.innerHTML=pos.coords.longitude;})
 }
 
-btn.addEventListener('click', getCoords);
+locationBtn.addEventListener('click', getCoords);
 
 
 

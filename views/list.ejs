@@ -7,17 +7,21 @@
 
 <div class="container">
 
-    <div class="mb-3">
+    <div class="mb-5 w-75 mx-auto">
         <!-- search string input box -->
         <form class="input-group" method="GET" action="/arenas" >
             
                 <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input class="search form-control" type="search" placeholder="Search" aria-label="Search" name="search">
+                <input id="search" class="search form-control" type="search" placeholder="Search for an arena/ sport/ location" aria-label="Search" name="search">
             
             <div class="input-group-append">
-                <a class="btn btn-danger navigate"><i class="fas fa-location-arrow"></i>&nbsp Locate Me</a> 
+                <button class="btn btn-danger" type="submit">Search</button>
+                <!-- <a class="btn btn-danger navigate"><i class="fas fa-location-arrow"></i>&nbsp Locate Me</a>
+                <p id="latitudeInput"></p>
+                <p id="longitudeInput"></p> -->
             </div>
         </form>
+        
     </div>
 
     <%if(sstring){%>
