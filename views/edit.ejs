@@ -140,12 +140,12 @@
             <h2>EDIT BOOKING DETAILS</h2>
             <div class="form-group mb-3">
                 <label for="startDate">Enter the first date to accept Bookings:</label>
-                <input class="form-control" type="date"  name="arena[startDate]" id="startDate" required>
+                <input class="form-control" type="date"  name="arena[startDate]" id="startDate" value=<%=startDateString%> required>
                 <div class="invalid-feedback">
                     Required!
                 </div>
                 <label for="endDate">Enter the last date to accept Bookings:</label>
-                <input class="form-control" type="date" name="arena[endDate]" id="endDate" required>
+                <input class="form-control" type="date" name="arena[endDate]" id="endDate" value=<%=endDateString%> required>
                 <div class="invalid-feedback">
                     Required!
                 </div>

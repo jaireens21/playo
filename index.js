@@ -63,7 +63,19 @@ function catchAsync(myFunc){
     myFunc(req,res,next).catch(e=>next(e));
   }
 }
-
+//create a date object using string input
+function createDateObj(str){
+  let dateParts=[];
+  if(str.indexOf("-")!==-1){
+    dateParts=str.split("-");
+  }else if (str.indexOf("/")!==-1){
+    dateParts=str.split("/");
+  }
+  
+  let date=new Date(dateParts[0],dateParts[1]-1,dateParts[2],"06","00");
+  //creating a date object with default time set as local EST 6:00 hrs. We are keeping in mind EST vs GMT(UTC) (4 hrs) & dayLightSavings (+ or - 1 hr), so that date doesnot switch by -1 when generating localeTimeString
+  return date;
+}
 
 const myError=require('./myError'); //custom error class
 
@@ -105,7 +117,7 @@ app.use((req,res,next)=>{
 });
 
 const {isLoggedIn, isOwner, hasOwnerRole, validateArenaData, validateFormData, validateUserFormData}=require('./middleware.js'); //importing middleware 
-const createDateObj=require('./public/javascripts/createDateObj');
+
 
 
 //image uploading to cloudinary
@@ -359,39 +371,52 @@ app.get('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
     return res.redirect('/arenas/list');
   }
   const todayString=new Date().toLocaleDateString('en-CA');
+  const startDateString=arena.startDate.toLocaleDateString('en-CA');
   const endDateString=arena.endDate.toLocaleDateString('en-CA');
-  res.render('book.ejs', {arena,todayString, endDateString});
+  res.render('book.ejs', {arena,todayString,startDateString, endDateString});
 }))
 
 
 //checking booking availability
 app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(async(req,res)=>{
+  
   const arena=await Arena.findById(req.params.id);
   if(!arena){
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas/list');
   }
+
   const {sport}=req.body;
   if (!arena.sports.includes(sport)){
     req.flash('error','This arena does not offer that sport!');
     return res.redirect(`/arenas/${arena._id}`);
   }
-
-  let dateParts=req.body.date.split("-");
-  let date=new Date(dateParts[0],dateParts[1]-1,dateParts[2],"06","00");
-  //creating a date object with default time set as 6:00 hrs keeping EST vs GMT(UTC) (4 hrs) & dayLightSavings (+ or - 1 hr) in mind so that date doesnot switch by -1 when generating localeTimeString
-
+  
+  //date of booking should be greater than or equal to startDate or today, whichever is greater
+  //date should be less than or equal to endDate
+  let date=createDateObj(req.body.date); 
+  let dateStr=date.toLocaleDateString("en-CA");
+  
   let today=new Date(); today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
-  if(date<today){
-    date=today;
-  }
-  //Ensuring that the date (coming from the form) is greater than today's date
-  //If it is less than today's date, then reset it to today's date 
-  //console.log("date", date);
-  let reservations= arena.sportBookings.find(booking=>booking.sport===sport).bookings.filter(b=>b.date.toLocaleDateString()===date.toLocaleDateString());
-  //console.log("reservations", reservations);
+  let todayStr=today.toLocaleDateString("en-CA");
+
+  let startDateStr=arena.startDate.toLocaleDateString("en-CA");
+  let endDateStr=arena.endDate.toLocaleDateString("en-CA");
+
+  let minDateStr= todayStr>startDateStr? todayStr: startDateStr;
+  if(dateStr<minDateStr){dateStr=minDateStr;}
+  else if(dateStr>endDateStr){dateStr=endDateStr;}
+
+  let reservations= arena.sportBookings.find(obj=>obj.sport===sport).bookings.filter(booking=>{
+    let str= booking.date.toLocaleDateString("en-CA");
+    if (str===dateStr){
+      return booking;
+    }});
+  console.log("reservations", reservations);
+
   let reservedTimeSlots=reservations.map(r=>r.time);
-  //console.log("reserved time slots", reservedTimeSlots);
+    console.log("reserved time slots", reservedTimeSlots);
+
   let availableTimeSlots=[];
   let i=arena.startTiming;
   while(i<arena.endTiming){
@@ -401,9 +426,9 @@ app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(asyn
     ++i;
   }
   // console.log(availableTimeSlots);
-  let dateString=date.toLocaleDateString("en-CA");
+  
    
-  res.render('booking.ejs', {arena,sport,dateString,availableTimeSlots});
+  res.render('booking.ejs', {arena,sport,dateStr,availableTimeSlots});
   
 } ))
 
@@ -412,34 +437,35 @@ app.post('/arenas/:id/book/check', isLoggedIn, validateFormData, catchAsync(asyn
 app.post('/arenas/:id/book', isLoggedIn, catchAsync(async(req,res)=>{
   const arena=await Arena.findById(req.params.id);
   const {sport,time}=req.body;
-  let dateParts=req.body.date.split("-");
-  let date=new Date(dateParts[0],dateParts[1]-1,dateParts[2],"06","00");
+  let date=createDateObj(req.body.date);
+  let dateString=date.toLocaleDateString("en-CA");
+
   let newBooking={date,time,playerId:req.user._id};
   
-  arena.sportBookings.find(booking=>booking.sport===sport).bookings.push(newBooking);
+  arena.sportBookings.find(obj=>obj.sport===sport).bookings.push(newBooking);
   await arena.save();
-  let dateString=date.toLocaleDateString("en-CA");
+
   res.render('booked.ejs', {arena,sport,dateString,time});
   //send confirmation email to inform that arena has been booked
-  const transporter = nodemailer.createTransport({
-    service:'gmail',
-    auth:{
-      user:process.env.EMAIL_ADDRESS,
-      pass:process.env.EMAIL_PASSWORD
-    },
-  });
-  const mailOptions = {
-    to: req.user.email,
-    from: 'jaireen.s21@gmail.com',
-    subject: 'BOOKMYSPORTS : Your booking is confirmed',
-    text: `Hello ${req.user.username},\n\n` +
-    `This is a confirmation email. The following arena has been booked for BOOKMYSPORTS account ${req.user.email}:\n\n`+ `Arena: ${arena.name}, ${arena.location}\n` + `Date: ${dateString} \n` + `Time: ${time}:00 hours \n\n` + 'Have a good day!\n'
-  };
-  transporter.sendMail(mailOptions,(err)=>{
-    if(err){
-      console.log(err);
-    }
-  })
+  // const transporter = nodemailer.createTransport({
+  //   service:'gmail',
+  //   auth:{
+  //     user:process.env.EMAIL_ADDRESS,
+  //     pass:process.env.EMAIL_PASSWORD
+  //   },
+  // });
+  // const mailOptions = {
+  //   to: req.user.email,
+  //   from: 'jaireen.s21@gmail.com',
+  //   subject: 'BOOKMYSPORTS : Your booking is confirmed',
+  //   text: `Hello ${req.user.username},\n\n` +
+  //   `This is a confirmation email. The following arena has been booked for BOOKMYSPORTS account ${req.user.email}:\n\n`+ `Arena: ${arena.name}, ${arena.location}\n` + `Date: ${dateString} \n` + `Time: ${time}:00 hours \n\n` + 'Have a good day!\n'
+  // };
+  // transporter.sendMail(mailOptions,(err)=>{
+  //   if(err){
+  //     console.log(err);
+  //   }
+  // })
   
 } ))
 
@@ -473,7 +499,9 @@ app.get('/arenas/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas/list');
   }
-  res.render('edit.ejs', {arena:foundArena});
+  let startDateString=foundArena.startDate.toLocaleDateString("en-CA");
+  let endDateString=foundArena.endDate.toLocaleDateString("en-CA");
+  res.render('edit.ejs', {arena:foundArena, startDateString, endDateString});
 }))
 
 

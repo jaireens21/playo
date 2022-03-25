@@ -22,7 +22,7 @@
         
         <div class="form-group mb-3">
             <label class="form-label" for="date-select">Select Date:</label>
-            <input class="form-control" type="date" id="date-select" name="date" min=<%=todayString%> max=<%=arena.endDateString%> required>
+            <input class="form-control" type="date" id="date-select" name="date" min=<%=(todayString>startDateString? todayString: startDateString)%> max=<%=endDateString%> required>
             
         </div>
         

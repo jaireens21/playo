@@ -7,7 +7,7 @@
     <h1>Book your Time Slot</h1>
     <h2><%=arena.name%></h2>
     <h3><%=arena.location%></h3>
-    <h4>Looking for <%=sport%>  on <%=dateString%> </h4>
+    <h4>Looking for <%=sport%>  on <%=dateStr%> </h4>
     
      
     <form method="POST" action="/arenas/<%=arena._id%>/book" class="needs-validation mt-5" novalidate>
@@ -23,7 +23,7 @@
         
         <div class="form-group mb-3 visually-hidden">
             <label class="form-label" for="date-select">Date:</label>
-            <input class="form-control" type="date" id="date-select" name="date" min=<%=dateString%> max=<%=dateString%> value=<%=dateString%>  required>
+            <input class="form-control" type="date" id="date-select" name="date" min=<%=dateStr%> max=<%=dateStr%> value=<%=dateStr%>  required>
             
         </div>
         
