@@ -6,18 +6,14 @@ const createDateObj=require('../utils/createDateObj');
 
 const Arena=require('../models/arena');
 
-const {isLoggedIn, isOwner, hasOwnerRole, validateArenaData, validateFormData, validateUserFormData}=require('../middleware.js'); //importing middleware 
+const {isLoggedIn, isOwner, hasOwnerRole, validateArenaData}=require('../middleware.js'); //importing middleware 
 
 
 //image uploading to cloudinary
 const multer = require('multer'); //for image uploading
 const {cloudinary,storage}= require('../cloudinary'); //folder:cloudinary,file:index.js
 const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
-const whitelist = [ //allowed formats of images
-  'image/png',
-  'image/jpeg',
-  'image/jpg'
-];
+const whitelist = ['image/png', 'image/jpeg', 'image/jpg']; //allowed formats of images
 const upload = multer({  
   storage,  //upload to cloudinary
   limits: {fileSize: maxSize, files:3},//limit to 3 image uploads at once
@@ -36,7 +32,7 @@ const upload = multer({
 //list page showing all arenas
 router.get('/', catchAsync(async(req,res)=>{
     // searching for an arena (name or location or sports)
-    let noMatch = null; let sstring="";
+    let sstring=""; let hasNoMatch = true; 
     if (req.query.search) {
       sstring=req.query.search;
       Arena.find({}, function(err, allArenas) {
@@ -48,10 +44,10 @@ router.get('/', catchAsync(async(req,res)=>{
               let regex=new RegExp(req.query.search, 'gi');
               let result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)||place.sports.join('').match(regex)));
               
-              if (result.length < 1) {
-              noMatch = req.query.search;
+              if (result.length >= 1) {
+              hasNoMatch = false;
               }
-              res.render('list.ejs', {allArenas: result, noMatch,sstring});
+              res.render('list.ejs', {allArenas: result, hasNoMatch,sstring});
           }
       });
    } else {
@@ -61,7 +57,7 @@ router.get('/', catchAsync(async(req,res)=>{
               req.flash('error', err.message);
               res.redirect('/');
             } else {
-             res.render('list.ejs', {allArenas,noMatch,sstring});
+             res.render('list.ejs', {allArenas,hasNoMatch,sstring});
             }
           });
       }
@@ -70,7 +66,7 @@ router.get('/', catchAsync(async(req,res)=>{
 
 //serve a form to add new arena
 router.get('/new', isLoggedIn, hasOwnerRole, (req,res)=>{
-    res.render('new.ejs');
+  res.render('new.ejs');
 })
 
 
@@ -130,8 +126,10 @@ router.route('/:id')
         //save edited arena's details
     .put(isLoggedIn, isOwner, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
         const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
-        const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
-        updatedArena.images.push(...imgs); 
+        if (req.files.length > 0) {
+          const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
+          updatedArena.images.push(...imgs);
+        } 
         await updatedArena.save();
         //removing selected images, filenames avbl on req.body.deleteImages[]
         if(req.body.deleteImages){
@@ -151,6 +149,9 @@ router.route('/:id')
           req.flash('error', 'Cannot find that arena!');
           return res.redirect('/arenas');
         }
+        for (let image of deletedArena.images) {
+          await cloudinary.uploader.destroy(image.filename);
+        } 
         req.flash('success', 'Arena deleted!');
         res.redirect('/arenas');
     }))

@@ -28,7 +28,7 @@
         <h2>Search term: '<%=sstring%>'</h1>
     <% }%>
 
-    <%if(noMatch!==null){%>
+    <%if(sstring && hasNoMatch){%>
         <h1>No matches found!</h1>
     <% }%>
 

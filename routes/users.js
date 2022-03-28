@@ -6,21 +6,21 @@ const crypto=require('crypto');//for generating resetPasswordToken
 const nodemailer = require('nodemailer'); //for sending password reset email
 
 const catchAsync=require('../utils/catchAsync.js');
+const myError=require('../utils/myError.js');
 
 const User=require('../models/user');
 
-const {isLoggedIn, isOwner, hasOwnerRole, validateArenaData, validateFormData, validateUserFormData}=require('../middleware.js'); //importing middleware 
+const {validateUserFormData}=require('../middleware.js'); //importing middleware 
 
 
 //new user registration form
 router.get('/register', (req,res)=>{
-    res.render('register');
+  res.render('register');
 })
 
 
 //create a new user
 router.post('/register', validateUserFormData, catchAsync(async(req,res,next)=>{
-  try{
     const {username,email,password,role}=req.body;
     const user=new User({username,email,role});
     
@@ -36,18 +36,16 @@ router.post('/register', validateUserFormData, catchAsync(async(req,res,next)=>{
     };
     const {error}= passwordComplexity(complexityOptions).validate(password);
     if (error){ 
-      throw new Error('Password does not meet complexity criteria! Please try again!');
+      req.flash('error','Password does not meet complexity criteria! Please try again!');
+      return res.redirect('/register');
     }
     const newUser= await User.register(user,password);
     req.login(newUser, err=>{ 
       if (err) return next(err);
-      req.flash('success','Registration successful!');
-      res.redirect('/arenas');
     })
-  }catch(e){
-    req.flash('error', e.message);
-    res.redirect('/register');
-  }
+    req.flash('success','Registration successful!');
+    return res.redirect('/arenas');
+  
 }))
 
 
@@ -61,16 +59,17 @@ router.get('/login', (req,res)=>{
 router.post('/login',  passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), (req,res)=>{
   req.flash('success', 'Welcome back!');
   const redirectTo= req.session.originalUrl || '/arenas';
-  delete req.session.originalUrl; //clear the session of this data
-  res.redirect(redirectTo);
+  delete req.session.originalUrl; 
+  return res.redirect(redirectTo);
 })
 
 
 //logout user
 router.get('/logout',(req,res)=>{
   req.logout();
+  // req.session.destroy(); // clear the session data
   req.flash('success', 'Logged out!');
-  res.redirect('/arenas');
+  return res.redirect('/arenas');
 })
 
 
@@ -81,7 +80,7 @@ router.get('/forgot', (req,res)=>{
   if (req.isAuthenticated()) { //user is alreay logged in
     return res.redirect('/');
   }
-  res.render('forgot.ejs'); 
+  return res.render('forgot.ejs'); 
 })
 
 
@@ -89,7 +88,7 @@ router.get('/forgot', (req,res)=>{
 router.post('/forgot', catchAsync(async(req,res)=>{
   const user=await User.findOne({email:req.body.email});
   if(!user){
-    req.flash('error','user does not exist! please signup!');
+    req.flash('error','User does not exist! Please register!');
     return res.redirect('/register');
   }
   const token=crypto.randomBytes(20).toString('hex');
@@ -113,11 +112,11 @@ router.post('/forgot', catchAsync(async(req,res)=>{
     `http://localhost:8080/reset/${token}\n\n'` +
     'If you did not request this, please ignore this email and your password will remain unchanged.\n'
   };
-  console.log('sending email');
+  //console.log('sending email');
 
   transporter.sendMail(mailOptions,(err)=>{
     if(err){
-      req.flash('error', 'there is an error!');
+      req.flash('error', 'Error sending email for password reset! Please try again');
       console.log(err);
       res.redirect('/forgot');
     }else{
@@ -141,20 +140,23 @@ router.get('/reset/:token', catchAsync(async(req,res)=>{
 
 //update user's password
 router.put('/reset/:token', catchAsync(async(req,res)=>{
-  const {password}=req.body;
+  
   let user= await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
   if(!user){
     req.flash('error', 'Password reset token is invalid or has expired.');
     res.redirect('/forgot');
   }
+  
+  const {password}=req.body;
   //password complexity check implemented using js on the reset page.
-  user.setPassword(password, (err,user)=>{ //a passportlocal method to set user password
+  user.setPassword(password, async(err,user)=>{ //a passportlocal method to set user password
     if(err){return next(err);}
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
-    user.save();
+    await user.save();
+    //console.log('user updated!');
   });
-  console.log('user updated!');
+  
   req.flash('success', 'Password has been reset.');
   res.redirect('/login');
   //send email to inform that password has changed
@@ -170,7 +172,7 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
     from: 'jaireen.s21@gmail.com',
     subject: 'BOOKMYSPORTS : Your password has been changed',
     text: 'Hello,\n\n' +
-    `This is a confirmation that the password for your account ${user.email} on BOOKMYSPORTS has been changed.\n`
+    `This is a confirmation email that the password for your account ${user.email} on BOOKMYSPORTS has been changed successfully.\n`
   };
   transporter.sendMail(mailOptions,(err)=>{
     if(err){

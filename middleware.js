@@ -67,7 +67,7 @@ const formSchema=Joi.object({
   sport:Joi.string().required(),
   date:Joi.date().required(),
 })
-module.exports.validateFormData= (req,res,next)=>{
+module.exports.validateBookingFormData= (req,res,next)=>{
     const {error}=formSchema.validate(req.body);
     if(error){
       const msg=error.details.map(e=>e.message).join(',');
@@ -82,15 +82,16 @@ const userformSchema=Joi.object({
   username:Joi.string().required(),
   password: Joi.string().required(),
   //password complexity being checked by passwordComplexity npm package in index.js
+  //email:Joi.string().email({ minDomainSegments: 2 }).required(),
   email:Joi.string().email({ minDomainSegments: 2, tlds: { allow: true } }).required(),
-  //above email complexity check will trigger an error page instead of flash & redirect
-  // email:Joi.string().required(),
+  //email:Joi.string().required(),
   role:Joi.string().required(),
 })
 module.exports.validateUserFormData= (req,res,next)=>{
     const {error}=userformSchema.validate(req.body);
     if(error){
       const msg=error.details.map(e=>e.message).join(',');
+      //next(new myError(400, msg)); //call error handler with custom error
       req.flash('error', msg);
       return res.redirect('/register');
     }else next(); 

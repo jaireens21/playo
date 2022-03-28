@@ -21,7 +21,7 @@ mongoose.connect('mongodb://localhost:27017/playo',{
     console.log('Database connected');  
 })
 .catch( (err)=>{
-    console.log("connection error:");
+    console.log('connection error:');
     console.log(err);
     //interrogate the error, if it's something you can recover from, let it be.
     //if the exception is fatal, exit with prejudice
@@ -100,25 +100,25 @@ app.use('/arenas', arenaRoutes);
 app.use('/arenas/:id/book', bookingRoutes); 
 app.use('/', userRoutes); 
 
-app.get("/", (req,res)=>{
+app.get('/', (req,res)=>{
   res.render('landing');
 })
 
 //catch all for non-existent routes, can handle any request method (get/post/put etc), put after all known routes
-app.all("*", (req,res,next)=>{
-  next (new myError(404,"Page Not Found!"));
+app.all('*', (req,res,next)=>{
+  next (new myError(404,'Page Not Found!'));
 })
 
 //custom error handler
 app.use((err,req,res,next)=>{
   //extracting data from error & giving defaults
   const{statusCode=500}=err;
-  if(!err.message){err.message="Oh No! Something went wrong";}
+  if(!err.message){err.message='Oh No! Something went wrong';}
   if (err.code === 'LIMIT_FILE_SIZE')  //instanceof multer.MulterError
     {err.message = 'File Size is too large. Allowed file size is 2MB';}
   res.status(statusCode).render('error.ejs', {err});
 })
 
 app.listen(8080, ()=>{
-  console.log("listening on port 8080");
+  console.log('listening on port 8080');
 })

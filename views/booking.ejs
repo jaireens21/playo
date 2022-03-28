@@ -2,7 +2,7 @@
 
   
   
-<div class="w-50 mx-auto mt-5" >
+<div class="w-50 mx-auto my-5" >
 
     <h1>Book your Time Slot</h1>
     <h2><%=arena.name%></h2>
@@ -30,7 +30,7 @@
         <div class="form-group mb-3">
             <label class="form-label" for="time-select">Available Time Slots: </label>
             <select class="form-control" id="time-select" name="time" required>
-                <option value="">Please Choose an Option</option>
+                <option value="">Choose an Option</option>
                 <% for (let i of availableTimeSlots){ %>
                     <option value=<%=i%>><%=i%>:00 hrs</option>
                 <% } %>
@@ -42,9 +42,9 @@
 
         
 
-        <button type="submit" class="btn btn-success">Book</button>
-        <a href="/arenas/<%=arena._id%>/book" class="btn btn-primary">Modify Search</a>
-        <a href="/arenas/<%=arena._id%>" class="btn btn-dark">Arena Details</a>
+        <button type="submit" class="btn btn-success my-3 me-3">Book</button>
+        <a href="/arenas/<%=arena._id%>/book" class="btn btn-primary me-3">Modify Search</a>
+        <a href="/arenas/<%=arena._id%>" class="btn btn-dark my-3">Arena Details</a>
 
     </form>
 
