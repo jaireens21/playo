@@ -118,10 +118,10 @@ router.post('/forgot', catchAsync(async(req,res)=>{
     if(err){
       req.flash('error', 'Error sending email for password reset! Please try again');
       console.log(err);
-      res.redirect('/forgot');
+      return res.redirect('/forgot');
     }else{
       //res.send(`Email sent to ${user.email}. Follow instructions given in the email.`);
-      res.render('forgotemail.ejs', {email: req.body.email});
+      return res.render('forgotemail.ejs', {email: req.body.email});
     }
   })
 }))
@@ -132,9 +132,9 @@ router.get('/reset/:token', catchAsync(async(req,res)=>{
   let user= await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
   if(!user){
     req.flash('error', 'Password reset token is invalid or has expired.');
-    res.redirect('/forgot');
+    return res.redirect('/forgot');
   }
-  res.render('reset.ejs', { user});
+  return res.render('reset.ejs', { user});
 }))
 
 
@@ -144,7 +144,7 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
   let user= await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
   if(!user){
     req.flash('error', 'Password reset token is invalid or has expired.');
-    res.redirect('/forgot');
+    return res.redirect('/forgot');
   }
   
   const {password}=req.body;
@@ -157,8 +157,6 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
     //console.log('user updated!');
   });
   
-  req.flash('success', 'Password has been reset.');
-  res.redirect('/login');
   //send email to inform that password has changed
   const transporter = nodemailer.createTransport({
     service:'gmail',
@@ -179,6 +177,8 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
       console.log(err);
     }
   })
+  req.flash('success', 'Password has been reset.');
+  return res.redirect('/login');
 }))
 
 

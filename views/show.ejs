@@ -1,112 +1,105 @@
 <%- layout('./layout/boilerplate.ejs') %>
 
-  
-  
-  <div class="showpageElements w-75 mx-auto mt-5">
+<div class="showpageElements mx-3 mx-md-5 my-5">
 
-    <div class="card bg-dark text-white mb-5">
-      <div class="carousel slide showpageImages" data-bs-ride="carousel" id="carouselIndicators">
-      
-        <div class="carousel-inner">
-          <% arena.images.forEach ( (img,index)=>{ %>
-            <div class="carousel-item <%= index===0? 'active' : '' %>">
-              <img src="<%=img.aspectratio%>" class="d-block" alt="">
-            </div>
-          <% }) %>
-        </div>
-  
-        <% if(arena.images.length>1){ %> 
-          <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-          </button>
-        <% } %> 
+  <div class="card showpageImagesCard bg-dark text-white mb-5 mx-auto">
+    <div class="carousel slide showpageImages" data-bs-ride="carousel" id="carouselIndicators">
+    
+      <div class="carousel-inner">
+        <% arena.images.forEach ( (img,index)=>{ %>
+          <div class="carousel-item <%= index===0? 'active' : '' %>">
+            <img src="<%=img.aspectratio%>" class="d-block mx-auto" alt="">
+          </div>
+        <% }) %>
       </div>
 
-      <div class="card-img-overlay">
-        <h2 class="card-title"><%=arena.name%></h2>
-        <hr>
-        <p><%=arena.location%></p>
-      </div>
-    </div>
-
-    <div class="d-flex flex-row justify-content-between">
-      <!-- 2 flexboxes(each has 2 cards) inside a flexbox -->
-      
-      <!-- 1st flex-box -->
-      <div class="d-flex flex-column me-5 w-75"> 
-
-        <div class="card showpageActivities mb-5">
-          <div class="card-header">ACTIVITIES AVAILABLE</div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-              <%for (let sport of arena.sports){%>
-              &nbsp; • <%=sport%>
-              <%}%>
-            </li>
-          </ul>
-        </div>
-
-        <div class="card showpageDescription mb-5 ">
-          <div class="card-header">ADDITIONAL INFORMATION</div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item"><%=arena.description%></li>
-            <li class="list-group-item"><span>Price : $ </span> <%=arena.price%> per hour</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- 2nd flexbox -->
-      <div class="d-flex flex-column">
-
-        <div class="card showpageTimings mb-5">
-          <div class="card-header">TIMINGS</div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item"><%=arena.startTiming%>:00 to <%=arena.endTiming + 1%>:00 hours </li>
-          </ul>
-        </div>
-
-        <div class="card showpageLocation mb-5">
-          <div class="card-header">LOCATION</div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item"><%=arena.location%>
-              <div class="d-flex justify-content-center">
-            
-                <iframe id="gMap"width="100%" height="250" title="Google Maps integration for location" src="https://maps.google.com/maps?q=<%=arena.location%>&t=&z=15&ie=UTF8&iwloc=&output=embed" loading="lazy"></iframe>
-                
-              </div>
-            </li>
-          </ul>
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- arena owner controls -->
-    <div class="showpageControls mb-5 w-50 d-flex justify-content-between">
-      
-      <% if (loggedUser && arena.owner.equals(loggedUser._id)){ %> 
-      <a href="/arenas/<%=arena._id%>/edit" class="btn btn-primary mr-3">Edit Arena Details</a>
-      
-      <form method="POST" action="/arenas/<%=arena._id%>?_method=DELETE">
-        <button class="btn btn-danger mx-3" type="submit" onclick=<% ()=>(confirm('Are you you want to delete this Arena?')) %> >DELETE</button>
-      </form>
+      <% if(arena.images.length>1){ %> 
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
       <% } %> 
-      <a href="/arenas/<%=arena._id%>/book" class="btn btn-success mr-3">Book Now</a>
-      <a href="/arenas" class="btn btn-dark">Back to all Arenas</a>
-      
     </div>
 
+    <div class="card-img-overlay">
+      <h2 class="card-title"><%=arena.name%></h2>
+      <hr>
+      <p><%=arena.location%></p>
+    </div>
+  </div>
+
+  <div class="d-flex flex-column flex-md-row justify-content-between">
+    <!-- 2 flexboxes(each has 2 cards) inside a flexbox -->
     
-    
-  
-    
+    <!-- 1st flex-box -->
+    <div class="d-flex flex-column me-md-5"> 
+
+      <div class="card showpageActivities mb-5">
+        <div class="card-header">ACTIVITIES AVAILABLE</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            <%for (let sport of arena.sports){%>
+            &nbsp; • <%=sport%>
+            <%}%>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card showpageDescription mb-5 ">
+        <div class="card-header">ADDITIONAL INFORMATION</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%=arena.description%></li>
+          <li class="list-group-item"><span>Price : $ </span> <%=arena.price%> per hour</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 2nd flexbox -->
+    <div class="d-flex flex-column">
+
+      <div class="card showpageTimings mb-5">
+        <div class="card-header">TIMINGS</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%=arena.startTiming%>:00 to <%=arena.endTiming + 1%>:00 hours </li>
+        </ul>
+      </div>
+
+      <div class="card showpageLocation mb-5">
+        <div class="card-header">LOCATION</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%=arena.location%>
+            <div class="d-flex justify-content-center">
+          
+              <iframe id="gMap" width="100%" height="250" title="Google Maps integration for location" src="https://maps.google.com/maps?q=<%=arena.location%>&t=&z=15&ie=UTF8&iwloc=&output=embed" loading="lazy"></iframe>
+              
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
 
   </div>
+
+
+  <!-- arena owner controls -->
+  <div class="showpageControls d-flex flex-row flex-wrap justify-content-start">
+    
+    <% if (loggedUser && arena.owner.equals(loggedUser._id)){ %> 
+    <a href="/arenas/<%=arena._id%>/edit" class="btn btn-primary me-3 mb-3">Edit Arena Details</a>
+    
+    <form method="POST" action="/arenas/<%=arena._id%>?_method=DELETE">
+      <button class="btn btn-danger me-3 mb-3" type="submit" onclick=<% ()=>(confirm('Are you you want to delete this Arena?')) %> >DELETE</button>
+    </form>
+    <% } %> 
+    <a href="/arenas/<%=arena._id%>/book" class="btn btn-success me-3 mb-3">Book Now</a>
+    <a href="/arenas" class="btn btn-dark mb-3">Back to all Arenas</a>
+    
+  </div>
+
+</div>
 

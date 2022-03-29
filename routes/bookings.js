@@ -19,7 +19,7 @@ router.get('/', isLoggedIn, catchAsync(async(req,res)=>{
     const todayString=new Date().toLocaleDateString('en-CA');
     const startDateString=arena.startDate.toLocaleDateString('en-CA');
     const endDateString=arena.endDate.toLocaleDateString('en-CA');
-    res.render('book.ejs', {arena,todayString,startDateString, endDateString});
+    return res.render('book.ejs', {arena,todayString,startDateString, endDateString});
 }))
 
 
@@ -71,7 +71,7 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
       ++i;
     }
     // console.log(availableTimeSlots);
-    res.render('booking.ejs', {arena,sport,dateStr,availableTimeSlots});
+    return res.render('booking.ejs', {arena,sport,dateStr,availableTimeSlots});
 } ))
 
 
@@ -87,8 +87,6 @@ router.post('/', isLoggedIn, catchAsync(async(req,res)=>{
     arena.sportBookings.find(obj=>obj.sport===sport).bookings.push(newBooking);
     await arena.save();
   
-    res.render('booked.ejs', {arena,sport,dateString,time});
-
     //send confirmation email to inform that arena has been booked
     const transporter = nodemailer.createTransport({
       service:'gmail',
@@ -109,6 +107,8 @@ router.post('/', isLoggedIn, catchAsync(async(req,res)=>{
         console.log(err);
       }
     })
+
+    return res.render('booked.ejs', {arena,sport,dateString,time});
 } ))
   
 

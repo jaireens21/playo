@@ -32,36 +32,25 @@ const upload = multer({
 //list page showing all arenas
 router.get('/', catchAsync(async(req,res)=>{
     // searching for an arena (name or location or sports)
-    let sstring=""; let hasNoMatch = true; 
-    if (req.query.search) {
-      sstring=req.query.search;
-      Arena.find({}, function(err, allArenas) {
-        if (err) {
-          console.log(err);
-          req.flash('error', err.message);
-          res.redirect('/');
-        } else {
-              let regex=new RegExp(req.query.search, 'gi');
-              let result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)||place.sports.join('').match(regex)));
-              
-              if (result.length >= 1) {
-              hasNoMatch = false;
-              }
-              res.render('list.ejs', {allArenas: result, hasNoMatch,sstring});
+    let sstring=""; let hasNoMatch = true; let result=[];
+    Arena.find({}, function(err, allArenas) {
+      if (err) {
+        console.log(err);
+        req.flash('error', err.message);
+        return res.redirect('/');
+      } else {
+        if (req.query.search){
+          sstring=req.query.search;
+          let regex=new RegExp(req.query.search, 'gi');
+          result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)||place.sports.join('').match(regex)));
+          if (result.length >= 1) {
+            hasNoMatch = false;
           }
-      });
-   } else {
-          Arena.find({}, function(err, allArenas) {
-            if (err) {
-              console.log(err);
-              req.flash('error', err.message);
-              res.redirect('/');
-            } else {
-             res.render('list.ejs', {allArenas,hasNoMatch,sstring});
-            }
-          });
-      }
-}))
+          return res.render('list.ejs', {allArenas: result, hasNoMatch,sstring});
+        }else {
+          return res.render('list.ejs', {allArenas,hasNoMatch,sstring});
+        }
+      }})}))
   
 
 //serve a form to add new arena
@@ -95,7 +84,7 @@ router.post('/', isLoggedIn, hasOwnerRole, upload.array('image'), validateArenaD
     await newArena.save();
   
     req.flash('success', 'Successfully created new Arena!');
-    res.redirect(`/arenas/${newArena._id}`);
+    return res.redirect(`/arenas/${newArena._id}`);
 }))
 
 //serve edit form for an arena
@@ -107,7 +96,7 @@ router.get('/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
     }
     let startDateString=foundArena.startDate.toLocaleDateString('en-CA');
     let endDateString=foundArena.endDate.toLocaleDateString('en-CA');
-    res.render('edit.ejs', {arena:foundArena, startDateString, endDateString});
+    return res.render('edit.ejs', {arena:foundArena, startDateString, endDateString});
 }))
 
 
@@ -120,12 +109,16 @@ router.route('/:id')
           req.flash('error', 'Cannot find that arena!');
           return res.redirect('/arenas');
         }
-        res.render('show.ejs', {arena});
+        return res.render('show.ejs', {arena});
     }))
 
         //save edited arena's details
     .put(isLoggedIn, isOwner, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
         const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
+        if (!updatedArena){
+          req.flash('error', 'Cannot find that arena!');
+          return res.redirect('/arenas');
+        }
         if (req.files.length > 0) {
           const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
           updatedArena.images.push(...imgs);
@@ -139,7 +132,7 @@ router.route('/:id')
           await updatedArena.updateOne( {$pull: {images: {filename: {$in: req.body.deleteImages}}}});  
         }
         req.flash('success', 'Successfully updated!');
-        res.redirect(`/arenas/${updatedArena._id}`);
+        return res.redirect(`/arenas/${updatedArena._id}`);
     }))
 
         //delete an arena
@@ -153,7 +146,7 @@ router.route('/:id')
           await cloudinary.uploader.destroy(image.filename);
         } 
         req.flash('success', 'Arena deleted!');
-        res.redirect('/arenas');
+        return res.redirect('/arenas');
     }))
 
 

@@ -8,7 +8,7 @@ const ImageSchema= new mongoose.Schema({
 
 //a virtual to crop images to similar sizes using cloudinary to show on arena page
 ImageSchema.virtual('aspectratio').get(function(){
-    return this.url.replace('/upload', '/upload/b_black,c_pad,ar_16:9');
+    return this.url.replace('/upload', '/upload/b_black,c_pad,ar_4:3');
 });  
 //for edit page
 ImageSchema.virtual('cropped').get(function(){
