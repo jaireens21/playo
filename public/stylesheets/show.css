@@ -1,40 +1,4 @@
-#gMap{
-    margin-top: 15px;
-    margin-bottom: 10px;
-    margin-left:5px;
-    margin-right: 5px;
-}
-
-.showpageImages img{
-    min-height: 300px;
-    max-width: 100%;
-}
-
-
-
-.card-img-overlay{
-    margin-top: 4vw;
-    margin-left: 3vw;
-    margin-right: 3vw;
-}
-@media (min-width:1200px){
-    .card-img-overlay{
-        max-width: 25%;
-    }
-
-}
-
-.showpageLocation{
-    min-width: 300px;
-}
-
-
-.footer a{
-    text-decoration: none;
-    color:whitesmoke;
-}
-
-
+/* list page */
 .jumbotron {
     background: linear-gradient(rgba(70, 70, 70, 0.35), rgba(70, 70, 70, 0.35)),
       url(https://images.unsplash.com/photo-1572218663709-a0d210adfb41?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80);
@@ -51,3 +15,83 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
 }
 
+/* show arena page */
+.showpageDiv{
+    width:75%;
+    margin:3rem auto;
+}
+
+.showpageImages img{
+    max-height: 50vh;
+    max-width: 100%;
+}
+
+.nameOnImage{
+    margin-top: 4vw;
+    margin-left: 3vw;
+    margin-right: 3vw;
+}
+
+.firstFlexBox{
+    display: flex;
+    flex-direction: column;
+    width:100%;
+    margin:3rem auto;
+    
+    
+}
+.secondFlexBox{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin:3rem auto;
+    margin-top: 0;
+}
+
+#gMap{
+    margin: 15px 5px 10px 5px;
+   
+}
+
+/* footer partial */
+.footer a{
+    text-decoration: none;
+    color:whitesmoke;
+}
+
+/* add/ edit arena pages */
+.arenaForm{
+    width:75%;
+    margin:3rem auto;
+}
+/* booking arena pages */
+.bookingForm{
+    width:70%;
+    margin:3rem auto;
+}
+
+@media(min-width:768px){
+    .bookingForm{
+        width:50%;
+    }
+}
+@media(min-width:992px){
+    .arenaForm{
+        width:50%;
+    } 
+    .bookingForm{
+        width:40%;
+    }
+    .showpageDiv{
+        width:60%;
+    }
+    
+    .firstFlexBox{
+        max-width:65%;
+       margin:3rem 1rem 3rem 0;
+    }
+    .secondFlexBox{
+        max-width: 30%;
+        margin:3rem 0 3rem 1rem;
+    }
+}

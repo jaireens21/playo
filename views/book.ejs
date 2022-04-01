@@ -2,14 +2,14 @@
 
   
   
-<div class="w-75 w-md-50 mx-auto my-5">
+<div class="bookingForm mx-auto my-5">
 
     <h1>Search for Available Time Slots</h1>
     <h2><%=arena.name%></h2>
     <h3><%=arena.location%></h3>
      
     <form method="POST" action="/arenas/<%=arena._id%>/book/check" class="needs-validation mt-5" novalidate>
-        <div class="form-group mb-3">
+        <div class="mb-3">
             <label class="form-label" for="sport-select">Select Sport: </label>
             <select class="form-control" id="sport-select" name="sport" required>
                 <option value="">Choose an Option</option>
@@ -20,7 +20,7 @@
             
         </div>
         
-        <div class="form-group mb-5">
+        <div class="mb-5">
             <label class="form-label" for="date-select">Select Date:</label>
             <input class="form-control" type="date" id="date-select" name="date" min=<%=(todayString>startDateString? todayString: startDateString)%> max=<%=endDateString%> required>
             

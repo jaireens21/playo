@@ -1,14 +1,14 @@
 <%- layout('./layout/boilerplate.ejs') %>
 
-<div class="showpageElements mx-3 mx-md-5 my-5">
+<div class="showpageDiv">
 
-  <div class="card showpageImagesCard bg-dark text-white mb-5 mx-auto">
+  <div class="card bg-dark text-white mx-auto">
     <div class="carousel slide showpageImages" data-bs-ride="carousel" id="carouselIndicators">
     
       <div class="carousel-inner">
         <% arena.images.forEach ( (img,index)=>{ %>
           <div class="carousel-item <%= index===0? 'active' : '' %>">
-            <img src="<%=img.aspectratio%>" class="d-block mx-auto" alt="">
+            <img src="<%=img.aspectratio%>" class="d-block mx-auto" alt="arena images">
           </div>
         <% }) %>
       </div>
@@ -25,20 +25,20 @@
       <% } %> 
     </div>
 
-    <div class="card-img-overlay">
+    <div class="card-img-overlay nameOnImage">
       <h2 class="card-title"><%=arena.name%></h2>
       <hr>
       <p><%=arena.location%></p>
     </div>
   </div>
 
-  <div class="d-flex flex-column flex-md-row justify-content-between">
+  <div class="showpageFlexBox d-flex flex-column flex-lg-row">
     <!-- 2 flexboxes(each has 2 cards) inside a flexbox -->
     
     <!-- 1st flex-box -->
-    <div class="d-flex flex-column me-md-5"> 
+    <div class="firstFlexBox"> 
 
-      <div class="card showpageActivities mb-5">
+      <div class="card mb-5">
         <div class="card-header">ACTIVITIES AVAILABLE</div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item">
@@ -49,7 +49,7 @@
         </ul>
       </div>
 
-      <div class="card showpageDescription mb-5 ">
+      <div class="card">
         <div class="card-header">ADDITIONAL INFORMATION</div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item"><%=arena.description%></li>
@@ -59,16 +59,16 @@
     </div>
 
     <!-- 2nd flexbox -->
-    <div class="d-flex flex-column">
+    <div class="secondFlexBox">
 
-      <div class="card showpageTimings mb-5">
+      <div class="card mb-5">
         <div class="card-header">TIMINGS</div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item"><%=arena.startTiming%>:00 to <%=arena.endTiming + 1%>:00 hours </li>
         </ul>
       </div>
 
-      <div class="card showpageLocation mb-5">
+      <div class="card showpageLocation">
         <div class="card-header">LOCATION</div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item"><%=arena.location%>

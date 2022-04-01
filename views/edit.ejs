@@ -1,16 +1,16 @@
 <%- layout('./layout/boilerplate.ejs') %>
 
-        <form method="POST" action="/arenas/<%=arena._id%>?_method=PUT" class="w-75 mx-auto needs-validation" novalidate enctype="multipart/form-data">
+        <form method="POST" action="/arenas/<%=arena._id%>?_method=PUT" class="arenaForm needs-validation" novalidate enctype="multipart/form-data">
             <h1 class="text-center">Edit Details of Arena</h1>
-            <div class="form-group mb-3">
-                <label for="name">Enter Name:</label>
+            <div class="mb-3">
+                <label for="name" class="form-label">Enter Name:</label>
                 <input class="form-control" type="text" name="arena[name]" id="name" value="<%=arena.name%>" required>
                 <div class="invalid-feedback">
                     Required!
                 </div>
             </div>
-            <div class="form-group mb-3">
-                <label for="location">Enter Location:</label>
+            <div class="mb-3">
+                <label for="location" class="form-label">Enter Location:</label>
                 <input class="form-control" type="text" name="arena[location]" id="location" value="<%=arena.location%>" required>
                 <div class="invalid-feedback">
                     Required!
@@ -68,17 +68,14 @@
                 </div>
             </div>
 
-            <div class="form-group mb-3">
+            <div class="mb-3">
                 
-                <label for="price">Enter price per hour:</label>
+                <label for="price" class="form-label">Enter price per hour:</label>
                 <div class="input-group">
                     <div class="input-group-prepend">
                         <span class="input-group-text">$</span>
                     </div>
                 <input class="form-control" type="number" name="arena[price]" id="price" value="<%=arena.price%>" required>
-                <div class="valid-feedback">
-                    Looks good!
-                </div>
                 <div class="invalid-feedback">
                     Required!
                 </div>
@@ -93,8 +90,8 @@
                 </div>
             </div> -->
 
-            <div class="form-group mb-3">
-                <label for="description">Enter Description:</label>
+            <div class="mb-3">
+                <label for="description" class="form-label">Enter Description:</label>
                 <textarea class="form-control" name="arena[description]" id="description" rows="3" required><%=arena.description%></textarea>
                 
                 <div class="invalid-feedback">
@@ -113,21 +110,22 @@
                 </div>
             </div> -->
 
-            <div class="form-group mb-3">
-                <label for="image" class="form-label">Add more images (max 3 files with max file size of 2MB) : </label>
-                <input class="form-control" type="file" name="image" id="image" onchange="validateFileSize(this), validateFileNumber(this)" multiple>
+            <div class="mb-3">
+                <label for="image" class="form-label">Add more images: </label>
+                <input class="form-control" type="file" name="image" id="image" onchange="validateFileSize(this), validateFileNumber(this)" multiple aria-describedby="imageHelp">
+                <div id="imageHelp" class="form-text">Max 3 images can be uploaded at a time. Images must be jpeg/ jpg/ png format. Max file size of each image: 2 MB</div>
                 <!--validateFileSize prevent uploading image of large size, see public/javascripts-->
             </div>
 
-            <div class="form-group mb-3">
-                <label>Delete Images:</label>
-                <div class="row row-cols-4 g-4 mb-3">
+            <div class="mb-3">
+                <label class="form-label">Delete existing images:</label>
+                <div class="row row-cols-4 g-4 mb-3 pt-1">
                     <%for (let img of arena.images) {%>
                         <div class="col">
                             <div class="card">
                                 <img src="<%=img.cropped%>" alt="" class="img-thumbnail">
-                                <!--cropped is using virtual on models/campgrounds to give a 4:3 image-->
-                                <div class="card-img-overlay text-end pt-1 pe-2">
+                                <!--cropped using virtual on models/arenas to give a 4:3 image-->
+                                <div class="card-img-overlay m-0">
                                     <input class="form-check-input" type="checkbox" name="deleteImages[]" value="<%=img.filename%>" >    
                                 </div>
                             </div>
@@ -138,34 +136,40 @@
             </div>
             
             <h2>EDIT BOOKING DETAILS</h2>
-            <div class="form-group mb-3">
-                <label for="startDate">Enter the first date to accept Bookings:</label>
+            <div class="mb-3">
+                <label for="startDate" class="form-label">Enter the FIRST DATE to accept Bookings:</label>
                 <input class="form-control" type="date"  name="arena[startDate]" id="startDate" value=<%=startDateString%> required>
                 <div class="invalid-feedback">
                     Required!
                 </div>
-                <label for="endDate">Enter the last date to accept Bookings:</label>
+            </div>
+            <div class="mb-3">
+                <label for="endDate" class="form-label">Enter the LAST DATE to accept Bookings:</label>
                 <input class="form-control" type="date" name="arena[endDate]" id="endDate" value=<%=endDateString%> required>
                 <div class="invalid-feedback">
                     Required!
                 </div>
             </div>
             
-            <div class="form-group mb-3">
-                <label for="startTiming">Enter the time of the First Booking of the day (in 24 hour format):</label>
-                <input class="form-control" type="number"  min="1" max="23"  name="arena[startTiming]" id="startTiming" value="<%=arena.startTiming%>" required>
+            <div class="mb-3">
+                <label for="startTiming" class="form-label">Enter the time of the FIRST BOOKING of the day:</label>
+                <input class="form-control" type="number"  min="1" max="23"  name="arena[startTiming]" id="startTiming" value="<%=arena.startTiming%>" required aria-describedby="firstBookingHelp">
+                <div id="firstBookingHelp" class="form-text">Please use 24 hour format. Min time: 1, max time: 23</div>
                 <div class="invalid-feedback">
                     Required!
                 </div>
-                <label for="endTiming">Enter the time of the Last Booking of the day (in 24 hour format):</label>
-                <input class="form-control" type="number"  min="1" max="23" name="arena[endTiming]" id="endTiming" value="<%=arena.endTiming%>" required>
+            </div>
+            <div class="mb-3">
+                <label for="endTiming" class="form-label">Enter the time of the LAST BOOKING of the day:</label>
+                <input class="form-control" type="number"  min="1" max="23" name="arena[endTiming]" id="endTiming" value="<%=arena.endTiming%>" required aria-describedby="lastBookingHelp">
+                <div id="firstBookingHelp" class="form-text">Please use 24 hour format. Min time: 1, max time: 23</div>
                 <div class="invalid-feedback">
                     Required!
                 </div>
             </div>
 
 
-            <button type="submit" class="btn btn-primary my-3">Update</button>
+            <button type="submit" class="btn btn-primary my-3 me-3">Update</button>
             <a href="/arenas/<%=arena._id%>" class="btn btn-dark">Cancel</a>
         </form>
     

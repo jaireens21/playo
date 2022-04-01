@@ -2,17 +2,18 @@
 
     
 
-    <form method="POST" action="/arenas" class="w-75 mx-auto needs-validation" enctype="multipart/form-data" novalidate>
+    <form method="POST" action="/arenas" class="arenaForm needs-validation" enctype="multipart/form-data" novalidate>
         <h1 class="text-center">Enter Details of New Arena</h1>
-        <div class="form-group mb-3">
-            <label for="name">Enter Name:</label>
+        <p class="text-center fst-italic mb-0">All fields are required.</p>
+        <div class="mb-3">
+            <label for="name" class="form-label">Enter Name:</label>
             <input class="form-control" type="text" name="arena[name]" id="name" required>
             <div class="invalid-feedback">
                 Required!
             </div>
         </div>
-        <div class="form-group mb-3">
-            <label for="location">Enter Location:</label>
+        <div class="mb-3">
+            <label for="location" class="form-label">Enter Location:</label>
             <input class="form-control" type="text" name="arena[location]" id="location" required>
             <div class="invalid-feedback">
                 Required!
@@ -22,7 +23,7 @@
         
 
 
-        <div class="form-group mb-3"><strong>Sports Offered:</strong> (Pick atleast one)
+        <div class="mb-3">Sports Offered:(Pick atleast one)
             <div class="form-check">
                 <input class="form-check-input sports" type="checkbox" value="Badminton" id="Badminton" name="arena[sports]">
                 <label class="form-check-label" for="Badminton">
@@ -73,8 +74,8 @@
             </div>    
         </div>
 
-        <div class="form-group mb-3">
-            <label for="price">Enter price per hour:</label>
+        <div class="mb-3">
+            <label for="price" class="form-label">Enter price per hour:</label>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text">$</span>
@@ -94,8 +95,8 @@
             </div>
         </div> -->
 
-        <div class="form-group mb-3">
-            <label for="description">Enter Description:</label>
+        <div class="mb-3">
+            <label for="description" class="form-label">Enter Description:</label>
             <textarea class="form-control" name="arena[description]" id="description" rows="3" required></textarea>
             <div class="invalid-feedback">
                 Required!
@@ -109,41 +110,48 @@
                 Required!
             </div>
         </div> -->
-        <div class="form-group mb-3">
+        <div class="mb-3">
             <label for="image" class="form-label">Add image(s):</label>
-            <input class="form-control" type="file" name="image" id="image" onchange="validateFileSize(this), validateFileNumber(this)" multiple required>
+            <input class="form-control" type="file" name="image" id="image" onchange="validateFileSize(this), validateFileNumber(this)" multiple required aria-describedby="imageHelp">
+            <div id="imageHelp" class="form-text">Max 3 images can be uploaded at a time. Images must be jpeg/ jpg/ png format. Max file size of each image: 2 MB</div>
             <div class="invalid-feedback">
                 This campground would look much better with a picture!
             </div>
         </div>
 
-        <h2>BOOKING DETAILS</h2>
-        <div class="form-group mb-3">
-            <label for="startDate">Enter the first date to accept Bookings:</label>
+        <h2 class="mb-3">BOOKING DETAILS</h2>
+        <div class="mb-3">
+            <label for="startDate" class="form-label">Enter the FIRST DATE to accept Bookings:</label>
             <input class="form-control" type="date"  name="arena[startDate]" id="startDate" required>
             <div class="invalid-feedback">
                 Required!
             </div>
-            <label for="endDate">Enter the last date to accept Bookings:</label>
+        </div>
+        <div class="mb-3">
+            <label for="endDate" class="form-label">Enter the LAST DATE to accept Bookings:</label>
             <input class="form-control" type="date" name="arena[endDate]" id="endDate" required>
             <div class="invalid-feedback">
                 Required!
             </div>
         </div>
-        <div class="form-group mb-3">
-            <label for="startTiming">Enter the time of the First Booking of the day (in 24 hour format):</label>
-            <input class="form-control" type="number"  min="1" max="23" name="arena[startTiming]" id="startTiming" required>
+        <div class="mb-3">
+            <label for="startTiming" class="form-label">Enter the time of the FIRST BOOKING of the day:</label>
+            <input class="form-control" type="number"  min="1" max="23" name="arena[startTiming]" id="startTiming" required aria-describedby="firstBookingHelp">
+            <div id="firstBookingHelp" class="form-text">Please use 24 hour format. Min time: 1, max time: 23</div>
             <div class="invalid-feedback">
                 Required!
             </div>
-            <label for="endTiming">Enter the time of the Last Booking of the day (in 24 hour format):</label>
-            <input class="form-control" type="number" min="1" max="23"  name="arena[endTiming]" id="endTiming" required>
+        </div>
+        <div class="mb-3">
+            <label for="endTiming" class="form-label">Enter the time of the LAST BOOKING of the day:</label>
+            <input class="form-control" type="number" min="1" max="23"  name="arena[endTiming]" id="endTiming" required aria-describedby="lastBookingHelp">
+            <div id="firstBookingHelp" class="form-text">Please use 24 hour format. Min time: 1, max time: 23</div>
             <div class="invalid-feedback">
                 Required!
             </div>
         </div>
         
-        <button type="submit" class="btn btn-primary my-3">Submit</button>
+        <button type="submit" class="btn btn-primary my-3 me-3">Submit</button>
         <a href="/arenas" class="btn btn-dark">Cancel</a>
     </form>
     
