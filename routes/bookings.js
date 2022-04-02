@@ -68,7 +68,7 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
       if (!reservedTimeSlots.includes(i)){
         availableTimeSlots.push(i);
       }
-      ++i;
+      i=i+arena.duration;
     }
     // console.log(availableTimeSlots);
     return res.render('booking.ejs', {arena,sport,dateStr,availableTimeSlots});

@@ -9,23 +9,25 @@
     <h3><%=arena.location%></h3>
      
     <form method="POST" action="/arenas/<%=arena._id%>/book/check" class="needs-validation mt-5" novalidate>
-        <div class="mb-3">
-            <label class="form-label" for="sport-select">Select Sport: </label>
-            <select class="form-control" id="sport-select" name="sport" required>
-                <option value="">Choose an Option</option>
-                <%for (let sport of arena.sports){%>
-                    <option value=<%=sport%>> <%=sport%> </option>
-                <%}%>
-            </select>
+        <div class="d-flex flex-wrap mb-3">
+
+            <div class="mb-3 me-3">
+                <label class="form-label" for="sport-select">Select Sport: </label>
+                <select class="form-control" id="sport-select" name="sport" required>
+                    <option value="">Choose an Option</option>
+                    <%for (let sport of arena.sports){%>
+                        <option value=<%=sport%>> <%=sport%> </option>
+                    <%}%>
+                </select>
+                
+            </div>
             
+            <div>
+                <label class="form-label" for="date-select">Select Date:</label>
+                <input class="form-control" type="date" id="date-select" name="date" min=<%=(todayString>startDateString? todayString: startDateString)%> max=<%=endDateString%> required>
+                
+            </div>
         </div>
-        
-        <div class="mb-5">
-            <label class="form-label" for="date-select">Select Date:</label>
-            <input class="form-control" type="date" id="date-select" name="date" min=<%=(todayString>startDateString? todayString: startDateString)%> max=<%=endDateString%> required>
-            
-        </div>
-        
 
         <button type="submit" class="btn btn-primary">Search</button>
         <a href="/arenas/<%=arena._id%>" class="btn btn-dark">Go Back</a>

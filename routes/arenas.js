@@ -61,8 +61,8 @@ router.get('/new', isLoggedIn, hasOwnerRole, (req,res)=>{
 
 //save a new arena to DB
 router.post('/', isLoggedIn, hasOwnerRole, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
-    const {name,location,description,price,sports,startTiming,endTiming}=req.body.arena;
-    const newArena=new Arena({name,location,description,price,sports,startTiming,endTiming});
+    const {name,location,description,price,sports,startTiming,endTiming,duration}=req.body.arena;
+    const newArena=new Arena({name,location,description,price,sports,startTiming,endTiming,duration});
     newArena.owner=req.user._id;
     newArena.images= req.files.map( f=>( {url:f.path, filename:f.filename}) ); 
     //details of uploaded images(available on req.files thanks to multer) being added to the arena

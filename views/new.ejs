@@ -133,7 +133,7 @@
                     <% } %>
                 </select>
             </div>
-            <div>
+            <div class="me-5 mb-3">
                 <label for="endTiming" class="form-label">LAST BOOKING of the day:</label>
                 <select class="form-control" id="endTiming" name="arena[endTiming]" required>
                     <option value="">Choose an Option</option>
@@ -141,8 +141,18 @@
                         <option value=<%=i%>> <%= i%1==0?i:i-0.5 %> : <%= i%1==0?'00':'30' %> hrs</option>
                     <% } %>
                 </select>
+                
+            </div>
+            <div >
+                <label for="duration" class="form-label">Duration of each booking:</label>
+                <select class="form-control" id="duration" name="arena[duration]" required>
+                    <option value="">Choose an Option</option>
+                    <option value="0.5">30 minutes</option>
+                    <option value="1">1 hour</option>
+                </select>
             </div>
         </div>
+        
         
         <button type="submit" class="btn btn-primary my-3 me-3">Submit</button>
         <a href="/arenas" class="btn btn-dark">Cancel</a>

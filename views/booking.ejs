@@ -32,7 +32,7 @@
             <select class="form-control" id="time-select" name="time" required>
                 <option value="">Choose an Option</option>
                 <% for (let i of availableTimeSlots){ %>
-                    <option value=<%=i%>><%=i%>:00 hrs</option>
+                    <option value=<%=i%>><%= i%1==0?i:i-0.5 %> : <%= i%1==0?'00':'30' %> hrs</option>
                 <% } %>
             </select>
                 
