@@ -87,14 +87,6 @@
             </div>
         </div>
 
-        <!-- <div class="form-group mb-3">
-            <label for="timing">Enter Timings:</label>
-            <input class="form-control" type="text"  name="arena[timing]" id="timing" required>
-            <div class="invalid-feedback">
-                Required!
-            </div>
-        </div> -->
-
         <div class="mb-3">
             <label for="description" class="form-label">Enter Description:</label>
             <textarea class="form-control" name="arena[description]" id="description" rows="3" required></textarea>
@@ -103,13 +95,6 @@
             </div>
         </div>
 
-        <!-- <div class="form-group mb-3">
-            <label for="image">Enter Image URL:</label>
-            <input class="form-control" type="text" name="arena[image]" id="image" required>
-            <div class="invalid-feedback">
-                Required!
-            </div>
-        </div> -->
         <div class="mb-3">
             <label for="image" class="form-label">Add image(s):</label>
             <input class="form-control" type="file" name="image" id="image" onchange="validateFileSize(this), validateFileNumber(this)" multiple required aria-describedby="imageHelp">
@@ -119,38 +104,43 @@
             </div>
         </div>
 
-        <h2 class="mb-3">BOOKING DETAILS</h2>
-        <div class="mb-3">
-            <label for="startDate" class="form-label">Enter the FIRST DATE to accept Bookings:</label>
-            <input class="form-control" type="date"  name="arena[startDate]" id="startDate" required onchange="checkStartDate(this)">
-            <div class="invalid-feedback">
-                Required!
+        <h2 class="mb-2">BOOKING DETAILS</h2>
+        <h3 class="mb-3 fs-5">SELECT DATE</h3>
+        <div class="mb-3 d-flex justify-content-start flex-wrap">
+            <div class="me-5 mb-3">
+                <label for="startDate" class="form-label">FIRST DATE to accept Bookings:</label>
+                <input class="form-control" type="date"  name="arena[startDate]" id="startDate" required onchange="checkStartDate(this)">
+                <div class="invalid-feedback">
+                    Required!
+                </div>
+            </div>
+            <div>
+                <label for="endDate" class="form-label">LAST DATE to accept Bookings:</label>
+                <input class="form-control" type="date" name="arena[endDate]" id="endDate" required onchange="checkEndDate(this)" >
+                <div class="invalid-feedback">
+                    Required!
+                </div>
             </div>
         </div>
-        <div class="mb-3">
-            <label for="endDate" class="form-label">Enter the LAST DATE to accept Bookings:</label>
-            <input class="form-control" type="date" name="arena[endDate]" id="endDate" required onchange="checkEndDate(this)" >
-            <div class="invalid-feedback">
-                Required!
+        <h3 class="mb-3 fs-5">SELECT TIME OF:</h3>
+        <div class="mb-3 d-flex justify-content-start flex-wrap">
+            <div class="me-5 mb-3">
+                <label for="startTiming" class="form-label">FIRST BOOKING of the day:</label>
+                <select class="form-control" id="startTiming" name="arena[startTiming]" required>
+                    <option value="">Choose an Option</option>
+                    <% for (let i=0;i<24;i=i+0.5){ %>
+                        <option value=<%=i%>> <%= i%1==0?i:i-0.5 %> : <%= i%1==0?'00':'30' %> hrs</option>
+                    <% } %>
+                </select>
             </div>
-        </div>
-        <div class="mb-3">
-            <label for="startTiming" class="form-label">Select the time of the FIRST BOOKING of the day:</label>
-            <select class="form-control" id="startTiming" name="arena[startTiming]" required>
-                <option value="">Choose an Option</option>
-                <% for (let i=0;i<24;++i){ %>
-                    <option value=<%=i%>><%=i%>:00 hrs</option>
-                <% } %>
-            </select>
-        </div>
-        
-            
-        <div class="mb-3">
-            <label for="endTiming" class="form-label">Enter the time of the LAST BOOKING of the day:</label>
-            <input class="form-control" type="number" min="1" max="23"  name="arena[endTiming]" id="endTiming" required aria-describedby="lastBookingHelp">
-            <div id="firstBookingHelp" class="form-text">Please use 24 hour format. Min time: 1, max time: 23</div>
-            <div class="invalid-feedback">
-                Required!
+            <div>
+                <label for="endTiming" class="form-label">LAST BOOKING of the day:</label>
+                <select class="form-control" id="endTiming" name="arena[endTiming]" required>
+                    <option value="">Choose an Option</option>
+                    <% for (let i=0;i<24;i=i+0.5){ %>
+                        <option value=<%=i%>> <%= i%1==0?i:i-0.5 %> : <%= i%1==0?'00':'30' %> hrs</option>
+                    <% } %>
+                </select>
             </div>
         </div>
         
