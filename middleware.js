@@ -46,8 +46,8 @@ const arnSchema=Joi.object({
       description:Joi.string().required(),
       price:Joi.number().required().min(0).max(500),
       sports:Joi.array().required().single(),
-      startTiming:Joi.number().required().min(1).max(23),
-      endTiming:Joi.number().required().min(1).max(23),
+      startTiming:Joi.number().required().min(0.5).max(23.5),
+      endTiming:Joi.number().required().min(.5).max(23.5),
       duration:Joi.number().required().min(0.5).max(1),
       startDate:Joi.date().required(),
       endDate:Joi.date().required(),
@@ -59,17 +59,18 @@ module.exports.validateArenaData= (req,res,next)=>{
       const msg=error.details.map(e=>e.message).join(',');
       next(new myError(400, msg)); //call error handler with custom error
     }else{ 
-      let {startDate,endDate}=req.body.arena;
+      let {startDate,endDate,startTiming,endTiming}=req.body.arena;
       let today=new Date();
       today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
       let todayStr=today.toLocaleDateString("en-CA");
       if(startDate<todayStr){
-        req.flash('error', 'Start Date cannot be earlier than today');
-        return res.redirect('/arenas/new');
+        next(new myError(400,'First Date of Booking cannot be earlier than today!'));
       }
       else if(endDate<startDate){
-        req.flash('error', 'Last Date cannot be earlier than Start Date');
-        return res.redirect('/arenas/new');
+        next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
+      }
+      else if(parseFloat(endTiming)<parseFloat(startTiming)){
+        next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
       }
       else next();//no error--> go to next function 
     }

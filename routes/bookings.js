@@ -37,24 +37,28 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
       req.flash('error','This arena does not offer that sport!');
       return res.redirect(`/arenas/${arena._id}`);
     }
-    //date of booking should be greater than or equal to startDate or today, whichever is greater
-    //date should be less than or equal to endDate
-    let date=createDateObj(req.body.date); 
-    let dateStr=date.toLocaleDateString("en-CA");
+    //date of booking should be greater than or equal to startDate (or today, whichever is greater)
+    //date of booking should be less than or equal to endDate
+    let bookingDate=createDateObj(req.body.date); 
+    let bookingDateStr=bookingDate.toLocaleDateString("en-CA");
     
-    let today=new Date(); today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
+    let today=new Date(); let currentTimeInHours=today.getHours(); 
+    today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
     let todayStr=today.toLocaleDateString("en-CA");
   
     let startDateStr=arena.startDate.toLocaleDateString("en-CA");
     let endDateStr=arena.endDate.toLocaleDateString("en-CA");
   
     let minDateStr= todayStr>startDateStr? todayStr: startDateStr;
-    if(dateStr<minDateStr){dateStr=minDateStr;}
-    else if(dateStr>endDateStr){dateStr=endDateStr;}
-  
+    
+    if(bookingDateStr<minDateStr || bookingDateStr>endDateStr){
+      req.flash("error", "Booking date is not valid!");
+      return res.redirect(`/arenas/${arena.id}/book`);
+    }
+      
     let reservations= arena.sportBookings.find(obj=>obj.sport===sport).bookings.filter(booking=>{
       let str= booking.date.toLocaleDateString("en-CA");
-      if (str===dateStr){
+      if (str===bookingDateStr){
         return booking;
       }});
     // console.log("reservations", reservations);
@@ -62,8 +66,14 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
     let reservedTimeSlots=reservations.map(r=>r.time);
       // console.log("reserved time slots", reservedTimeSlots);
   
-    let availableTimeSlots=[];
-    let i=arena.startTiming;
+    let availableTimeSlots=[]; let i;
+    if(todayStr===bookingDateStr){
+      //if the booking date is today:
+      //display only slots available after currentTimeInHours +1 hour
+      i= currentTimeInHours+1;
+    }else{
+      i=arena.startTiming;
+    }
     while(i<=arena.endTiming){
       if (!reservedTimeSlots.includes(i)){
         availableTimeSlots.push(i);
@@ -71,7 +81,7 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
       i=i+arena.duration;
     }
     // console.log(availableTimeSlots);
-    return res.render('booking.ejs', {arena,sport,dateStr,availableTimeSlots});
+    return res.render('booking.ejs', {arena,sport,bookingDateStr,availableTimeSlots});
 } ))
 
 

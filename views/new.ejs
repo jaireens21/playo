@@ -135,7 +135,7 @@
             </div>
             <div class="me-5 mb-3">
                 <label for="endTiming" class="form-label">LAST BOOKING of the day:</label>
-                <select class="form-control" id="endTiming" name="arena[endTiming]" required>
+                <select class="form-control" id="endTiming" name="arena[endTiming]" required onchange="checkEndTiming(this)">
                     <option value="">Choose an Option</option>
                     <% for (let i=0;i<24;i=i+0.5){ %>
                         <option value=<%=i%>> <%= i%1==0?i:i-0.5 %> : <%= i%1==0?'00':'30' %> hrs</option>
