@@ -12,7 +12,17 @@ const UserSchema=new mongoose.Schema({
         required:true
     },
     resetPasswordToken: String,
-    resetPasswordExpires: Date
+    resetPasswordExpires: Date,
+    bookings:[{
+        sport:String,
+        date:Date,
+        time:Number,
+        arenaId:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Arena'
+        },
+        _id: false,
+    }]
 });
 
 UserSchema.plugin(passportLocalMongoose);

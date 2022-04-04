@@ -7,7 +7,7 @@ const bookingSchema= new mongoose.Schema({
     playerId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'
-        // change to player after making player logins
+        
     },
     arenaId:{
         type:mongoose.Schema.Types.ObjectId,

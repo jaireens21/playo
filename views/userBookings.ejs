@@ -1,0 +1,15 @@
+<%- layout('./layout/boilerplate.ejs') %>
+
+<h1>hello.will show user bookings here</h1>
+
+<%for (let booking of user.bookings){ %>
+<ul>
+    <li><%=booking.date%></li>
+    <li><%=booking.time%></li>
+    <li><%=booking.sport%></li>
+    <li><%=booking.arenaId.name%></li>
+    <li><%=booking.arenaId.location%></li>
+    <li><a href="/arenas/<%=booking.arenaId._id%>" >View Arena</a></li>
+</ul>
+
+<%}%>

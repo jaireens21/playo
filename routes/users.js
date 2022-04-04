@@ -10,7 +10,7 @@ const myError=require('../utils/myError.js');
 
 const User=require('../models/user');
 
-const {validateUserFormData}=require('../middleware.js'); //importing middleware 
+const {validateUserFormData,isLoggedIn}=require('../middleware.js'); //importing middleware 
 
 
 //new user registration form
@@ -22,8 +22,7 @@ router.get('/register', (req,res)=>{
 //create a new user
 router.post('/register', validateUserFormData, catchAsync(async(req,res,next)=>{
     const {username,email,password,role}=req.body;
-    const user=new User({username,email,role});
-    
+       
     //password complexity check
     const complexityOptions = {
       min: 8,
@@ -39,6 +38,8 @@ router.post('/register', validateUserFormData, catchAsync(async(req,res,next)=>{
       req.flash('error','Password does not meet complexity criteria! Please try again!');
       return res.redirect('/register');
     }
+
+    const user=new User({username,email,role});
     const newUser= await User.register(user,password);
     req.login(newUser, err=>{ 
       if (err) return next(err);
@@ -77,7 +78,7 @@ router.get('/logout',(req,res)=>{
 
 //render a form to get user's email id
 router.get('/forgot', (req,res)=>{
-  if (req.isAuthenticated()) { //user is alreay logged in
+  if (req.isAuthenticated()) { //user is already logged in
     return res.redirect('/');
   }
   return res.render('forgot.ejs'); 
@@ -181,5 +182,21 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
   return res.redirect('/login');
 }))
 
+router.get('/users/:id/bookings',isLoggedIn, catchAsync(async(req,res)=>{
+  const user=await User.findById(req.user._id).populate({
+    path:'bookings',
+    populate:{
+      path:'arenaId',
+    }
+  });
+  return res.render('userBookings', {user});
+
+}) )
+
+router.get('/users/:id/profile',isLoggedIn, catchAsync(async(req,res)=>{
+  const user=await User.findById(req.user._id);
+  return res.render('userProfile', {user});
+
+}) )
 
 module.exports=router;

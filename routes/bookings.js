@@ -3,11 +3,12 @@ const router=express.Router({mergeParams: true});//make sure to add mergeParams:
 const nodemailer = require('nodemailer'); 
 
 const catchAsync=require('../utils/catchAsync.js');
-const createDateObj=require('../utils/createDateObj');
+const createDateObj=require('../utils/createDateObj.js');
 
-const Arena=require('../models/arena');
+const Arena=require('../models/arena.js');
 
 const {isLoggedIn, validateBookingFormData}=require('../middleware.js'); //importing middleware 
+const User = require('../models/user.js');
 
 //booking page for every arena; here user will select a sport & date 
 router.get('/', isLoggedIn, catchAsync(async(req,res)=>{
@@ -53,7 +54,7 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
     
     if(bookingDateStr<minDateStr || bookingDateStr>endDateStr){
       req.flash("error", "Booking date is not valid!");
-      return res.redirect(`/arenas/${arena.id}/book`);
+      return res.redirect(`/arenas/${arena._id}/book`);
     }
       
     let reservations= arena.sportBookings.find(obj=>obj.sport===sport).bookings.filter(booking=>{
@@ -92,10 +93,12 @@ router.post('/', isLoggedIn, catchAsync(async(req,res)=>{
     let date=createDateObj(req.body.date);
     let dateString=date.toLocaleDateString("en-CA");
   
-    let newBooking={date,time,playerId:req.user._id};
-    
-    arena.sportBookings.find(obj=>obj.sport===sport).bookings.push(newBooking);
+    arena.sportBookings.find(obj=>obj.sport===sport).bookings.push({date,time,playerId:req.user._id});
     await arena.save();
+
+    const user=await User.findById(req.user._id);
+    user.bookings.push({date,time,sport,arenaId:arena._id});
+    await user.save();
   
     //send confirmation email to inform that arena has been booked
     const transporter = nodemailer.createTransport({
