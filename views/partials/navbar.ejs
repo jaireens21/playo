@@ -29,6 +29,9 @@
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="/users/<%=loggedUser._id%>/bookings">My Bookings</a></li>
             <li><a class="dropdown-item" href="/users/<%=loggedUser._id%>/profile">My Profile</a></li>
+            <% if(loggedUser.role==="owner"){ %> 
+            <li><a class="dropdown-item" href="/users/<%=loggedUser._id%>/arenas">My Arenas</a></li>
+            <% } %> 
           </ul>
         </li>
         <a class="nav-link" href="/logout">Logout</a>

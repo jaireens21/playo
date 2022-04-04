@@ -8,7 +8,8 @@ const nodemailer = require('nodemailer'); //for sending password reset email
 const catchAsync=require('../utils/catchAsync.js');
 const myError=require('../utils/myError.js');
 
-const User=require('../models/user');
+const User=require('../models/user.js');
+const Arena=require('../models/arena.js');
 
 const {validateUserFormData,isLoggedIn}=require('../middleware.js'); //importing middleware 
 
@@ -197,6 +198,16 @@ router.get('/users/:id/profile',isLoggedIn, catchAsync(async(req,res)=>{
   const user=await User.findById(req.user._id);
   return res.render('userProfile', {user});
 
+}) )
+
+router.get('/users/:id/arenas',isLoggedIn, catchAsync(async(req,res)=>{
+  const userArenas=await Arena.find({owner:req.user._id});
+  if(userArenas.length>0){
+    return res.render('userArenas', {userArenas});
+  }else {
+    throw new myError(400,"You do not own any Arenas!");
+  }
+  
 }) )
 
 module.exports=router;

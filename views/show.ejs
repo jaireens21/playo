@@ -39,7 +39,7 @@
     <div class="firstFlexBox"> 
 
       <div class="card mb-5">
-        <div class="card-header">ACTIVITIES AVAILABLE</div>
+        <div class="card-header ">ACTIVITIES AVAILABLE</div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item">
             <%for (let sport of arena.sports){%>
@@ -50,7 +50,7 @@
       </div>
 
       <div class="card">
-        <div class="card-header">ADDITIONAL INFORMATION</div>
+        <div class="card-header ">ADDITIONAL INFORMATION</div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item"><%=arena.description%></li>
           <li class="list-group-item"><span>Price : $ </span> <%=arena.price%> per hour</li>
@@ -62,7 +62,7 @@
     <div class="secondFlexBox">
 
       <div class="card mb-5">
-        <div class="card-header">TIMINGS</div>
+        <div class="card-header ">TIMINGS</div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item"><%= arena.startTiming%1==0?arena.startTiming:arena.startTiming-0.5 %> : <%= arena.startTiming%1==0?'00':'30' %> to <%= arena.endTiming%1==0?arena.endTiming:arena.endTiming-0.5 %> : <%= arena.endTiming%1==0?'00':'30' %> hrs </li>
         </ul>
