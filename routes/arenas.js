@@ -114,7 +114,7 @@ router.route('/:id')
 
         //save edited arena's details
     .put(isLoggedIn, isOwner, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
-        const updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
+        let updatedArena= await Arena.findByIdAndUpdate(req.params.id, req.body.arena);
         if (!updatedArena){
           req.flash('error', 'Cannot find that arena!');
           return res.redirect('/arenas');
@@ -122,15 +122,27 @@ router.route('/:id')
         if (req.files.length > 0) {
           const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
           updatedArena.images.push(...imgs);
+          await updatedArena.save();
         } 
-        await updatedArena.save();
-        //removing selected images, filenames avbl on req.body.deleteImages[]
+        //removing selected images from the arena; filenames are avbl on req.body.deleteImages[]
         if(req.body.deleteImages){
+          //destroy image on cloudinary
           for(let filename of req.body.deleteImages){
             await cloudinary.uploader.destroy(filename); 
           }
-          await updatedArena.updateOne( {$pull: {images: {filename: {$in: req.body.deleteImages}}}});  
+          //remove image from arena, directly in db
+          await updatedArena.updateOne( {$pull: {images: {filename: {$in: req.body.deleteImages}}}}); 
         }
+        updatedArena=await Arena.findById(req.params.id);
+        //if all existing images were deleted, we add a default image 
+        if(updatedArena.images.length===0){
+          updatedArena.images.push({
+            url:"https://res.cloudinary.com/dvhs0ay92/image/upload/v1649104849/bookmysport/Default_Image_qlhcxb.jpg",
+            filename:"bookmysport/Default_Image_qlhcxb"
+          });
+          await updatedArena.save();
+        }
+        
         req.flash('success', 'Successfully updated!');
         return res.redirect(`/arenas/${updatedArena._id}`);
     }))

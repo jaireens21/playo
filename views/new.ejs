@@ -22,70 +22,72 @@
 
         
 
-
-        <div class="mb-3">Sports Offered: (Pick atleast one)
-            <div class="form-check">
-                <input class="form-check-input sports" type="checkbox" value="Badminton" id="Badminton" name="arena[sports]">
-                <label class="form-check-label" for="Badminton">
-                    Badminton
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input sports" type="checkbox" value="Baseball" id="Baseball" name="arena[sports]">
-                <label class="form-check-label" for="Baseball">
-                    Baseball
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input sports" type="checkbox" value="Basketball" id="Basketball" name="arena[sports]">
-                <label class="form-check-label" for="Basketball">
-                    Basketball
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input sports" type="checkbox" value="Boxing" id="Boxing" name="arena[sports]">
-                <label class="form-check-label" for="Boxing">
-                    Boxing
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input sports" type="checkbox" value="Cricket" id="Cricket" name="arena[sports]">
-                <label class="form-check-label" for="Cricket">
-                    Cricket
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input sports" type="checkbox" value="Football" id="Football" name="arena[sports]">
-                <label class="form-check-label" for="Football">
-                    Football
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input sports" type="checkbox" value="IceHockey" id="IceHockey" name="arena[sports]">
-                <label class="form-check-label" for="IceHockey">
-                    IceHockey
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input sports" type="checkbox" value="Yoga" id="Yoga" name="arena[sports]">
-                <label class="form-check-label" for="Yoga">
-                    Yoga
-                </label>
-            </div>    
-        </div>
-
-        <div class="mb-3">
-            <label for="price" class="form-label">Enter price per hour:</label>
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">$</span>
+            <div class="mb-3">Sports Offered: (Pick atleast one)
+                <div class="form-check sports">
+                    <input class="form-check-input" type="checkbox" value="Badminton" id="Badminton" name="arena[sports]">
+                    <label class="form-check-label" for="Badminton">
+                        Badminton
+                    </label>
                 </div>
-            <input class="form-control" type="number" name="arena[price]" id="price" min="0" max="500" required>
-            <div class="invalid-feedback">
-                Required! Max value: 500
+                <div class="form-check sports">
+                    <input class="form-check-input" type="checkbox" value="Baseball" id="Baseball" name="arena[sports]">
+                    <label class="form-check-label" for="Baseball">
+                        Baseball
+                    </label>
+                </div>
+                <div class="form-check sports">
+                    <input class="form-check-input" type="checkbox" value="Basketball" id="Basketball" name="arena[sports]">
+                    <label class="form-check-label" for="Basketball">
+                        Basketball
+                    </label>
+                </div>
+                <div class="form-check sports">
+                    <input class="form-check-input" type="checkbox" value="Boxing" id="Boxing" name="arena[sports]">
+                    <label class="form-check-label" for="Boxing">
+                        Boxing
+                    </label>
+                </div>
+                <div class="form-check sports">
+                    <input class="form-check-input" type="checkbox" value="Cricket" id="Cricket" name="arena[sports]">
+                    <label class="form-check-label" for="Cricket">
+                        Cricket
+                    </label>
+                </div>
+                <div class="form-check sports">
+                    <input class="form-check-input" type="checkbox" value="Football" id="Football" name="arena[sports]">
+                    <label class="form-check-label" for="Football">
+                        Football
+                    </label>
+                </div>
+                <div class="form-check sports">
+                    <input class="form-check-input" type="checkbox" value="IceHockey" id="IceHockey" name="arena[sports]">
+                    <label class="form-check-label" for="IceHockey">
+                        IceHockey
+                    </label>
+                </div>
+                <div class="form-check sports">
+                    <input class="form-check-input" type="checkbox" value="Yoga" id="Yoga" name="arena[sports]">
+                    <label class="form-check-label" for="Yoga">
+                        Yoga
+                    </label>
+                </div>    
             </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label">Enter price per hour:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input class="form-control" type="number" name="arena[price]" id="price" min="0" max="500" required>
+                    <div class="invalid-feedback">
+                    Required! Max value: 500
+                    </div>
+                </div>
+                
             </div>
-        </div>
+
+        
 
         <div class="mb-3">
             <label for="description" class="form-label">Enter Description:</label>
