@@ -100,6 +100,7 @@ const userformSchema=Joi.object({
   password: Joi.string().required(),
   //password complexity being checked by passwordComplexity npm package in index.js
   //email:Joi.string().email({ minDomainSegments: 2 }).required(),
+  confirm:Joi.string().required(),
   email:Joi.string().email({ minDomainSegments: 2, tlds: { allow: true } }).required(),
   //email:Joi.string().required(),
   role:Joi.string().required(),

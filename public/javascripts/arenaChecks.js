@@ -57,3 +57,4 @@ function validateFileSize(e) {
 //         document.getElementById('image').value=null;
 //     }
 // }
+

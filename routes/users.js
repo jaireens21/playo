@@ -22,32 +22,41 @@ router.get('/register', (req,res)=>{
 
 //create a new user
 router.post('/register', validateUserFormData, catchAsync(async(req,res,next)=>{
-    const {username,email,password,role}=req.body;
-       
-    //password complexity check
-    const complexityOptions = {
-      min: 8,
-      max: 16,
-      lowerCase: 1,
-      upperCase: 1,
-      numeric: 1,
-      symbol: 1,
-      requirementCount: 4,
-    };
-    const {error}= passwordComplexity(complexityOptions).validate(password);
-    if (error){ 
-      req.flash('error','Password does not meet complexity criteria! Please try again!');
-      return res.redirect('/register');
-    }
+  const {username,email,password,role}=req.body;
+      
+  //password complexity check
+  // const complexityOptions = {
+  //   min: 8,
+  //   max: 16,
+  //   lowerCase: 1,
+  //   upperCase: 1,
+  //   numeric: 1,
+  //   symbol: 1,
+  //   requirementCount: 4,
+  // };
+  // const {error}= passwordComplexity(complexityOptions).validate(password);
+  // if (error){ 
+  //   req.flash('error','Password does not meet complexity criteria! Please try again!');
+  //   return res.redirect('/register');
+  // }
 
+  //password complexity NOW being checked using js on userRegister page.
+  
+  const foundUser= await User.findOne({email:email});
+  if(foundUser){
+    req.flash('error','Uh oh! Looks like you already have an account with us! Please sign in.');
+    return res.redirect('/login');
+  }else{
     const user=new User({username,email,role});
     const newUser= await User.register(user,password);
     req.login(newUser, err=>{ 
-      if (err) return next(err);
+      if (err) {
+        return next(err);}
     })
     req.flash('success','Registration successful!');
     return res.redirect('/arenas');
-  
+  }
+   
 }))
 
 
@@ -140,7 +149,7 @@ router.get('/reset/:token', catchAsync(async(req,res)=>{
 }))
 
 
-//update user's password
+//reset user's password
 router.put('/reset/:token', catchAsync(async(req,res)=>{
   
   let user= await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
@@ -151,15 +160,14 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
   
   const {password}=req.body;
   //password complexity check implemented using js on the reset page.
-  user.setPassword(password, async(err,user)=>{ //a passportlocal method to set user password
-    if(err){return next(err);}
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
-    //console.log('user updated!');
-  });
+  await user.setPassword(password); //a passportlocal method to set user password
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+  //console.log('user updated!');
   
-  //send email to inform that password has changed
+  
+  //send email to inform that password has been reset 
   const transporter = nodemailer.createTransport({
     service:'gmail',
     auth:{
@@ -183,6 +191,30 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
   return res.redirect('/login');
 }))
 
+
+//CHANGE PASSWORD routes
+
+//render a form to get user's email id
+router.get('/users/:id/changePwd', isLoggedIn, (req,res)=>{
+  return res.render('passwordChange.ejs'); 
+})
+
+//change user's password
+router.post('/users/:id/changePwd', isLoggedIn, catchAsync(async(req,res)=>{
+  const {oldPassword,newPassword}=req.body;
+  //password complexity check on new password implemented using js on the passwordChange page.
+  //user details avbl on req.user since user is logged in
+  await req.user.changePassword(oldPassword, newPassword); //a passportlocal method to change user's password
+  req.logout();
+  req.flash('success', 'Password has been changed. Please login with new password');
+  return res.redirect('/login');
+
+}))
+
+
+
+
+//PROFILE ROUTES
 router.get('/users/:id/bookings',isLoggedIn, catchAsync(async(req,res)=>{
   const user=await User.findById(req.user._id).populate({
     path:'bookings',
@@ -190,7 +222,11 @@ router.get('/users/:id/bookings',isLoggedIn, catchAsync(async(req,res)=>{
       path:'arenaId',
     }
   });
-  return res.render('userBookings', {user});
+  let hasBookings=false;
+  if(user.bookings.length>0){
+    hasBookings=true;
+  }
+  return res.render('userBookings', {user, hasBookings});
 
 }) )
 

@@ -23,6 +23,22 @@ function passwordComplexityCheck(e) {
 
     if (flag){ 
         alert('Password does not meet complexity criteria! Please try again!');
-        document.getElementById('password').value=null;
+        e.value=null;
     }
+};
+
+
+function confirmNewPassword(e){
+    if(document.getElementById('newPassword').value !== document.getElementById('confirm').value) {
+        alert('Passwords do not match!'); 
+        e.value=null;
+    }
+      
+}
+function confirmPassword(e){
+    if(document.getElementById('password').value !== document.getElementById('confirm').value) {
+        alert('Passwords do not match!'); 
+        e.value=null;
+    }
+      
 }
