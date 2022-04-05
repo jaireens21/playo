@@ -55,7 +55,7 @@ router.get('/', catchAsync(async(req,res)=>{
 
 //serve a form to add new arena
 router.get('/new', isLoggedIn, hasOwnerRole, (req,res)=>{
-  res.render('new.ejs');
+  res.render('arenaNew.ejs');
 })
 
 
@@ -96,7 +96,7 @@ router.get('/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
     }
     let startDateString=foundArena.startDate.toLocaleDateString('en-CA');
     let endDateString=foundArena.endDate.toLocaleDateString('en-CA');
-    return res.render('edit.ejs', {arena:foundArena, startDateString, endDateString});
+    return res.render('arenaEdit.ejs', {arena:foundArena, startDateString, endDateString});
 }))
 
 
@@ -109,7 +109,7 @@ router.route('/:id')
           req.flash('error', 'Cannot find that arena!');
           return res.redirect('/arenas');
         }
-        return res.render('show.ejs', {arena});
+        return res.render('arenaShow.ejs', {arena});
     }))
 
         //save edited arena's details

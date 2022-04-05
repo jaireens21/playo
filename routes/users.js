@@ -16,7 +16,7 @@ const {validateUserFormData,isLoggedIn}=require('../middleware.js'); //importing
 
 //new user registration form
 router.get('/register', (req,res)=>{
-  res.render('register');
+  return res.render('userRegister.ejs');
 })
 
 
@@ -53,7 +53,7 @@ router.post('/register', validateUserFormData, catchAsync(async(req,res,next)=>{
 
 //login form
 router.get('/login', (req,res)=>{
-  res.render('login');
+  return res.render('userLogin.ejs');
 })
 
 
@@ -82,7 +82,7 @@ router.get('/forgot', (req,res)=>{
   if (req.isAuthenticated()) { //user is already logged in
     return res.redirect('/');
   }
-  return res.render('forgot.ejs'); 
+  return res.render('passwordForgot.ejs'); 
 })
 
 
@@ -123,7 +123,7 @@ router.post('/forgot', catchAsync(async(req,res)=>{
       return res.redirect('/forgot');
     }else{
       //res.send(`Email sent to ${user.email}. Follow instructions given in the email.`);
-      return res.render('forgotemail.ejs', {email: req.body.email});
+      return res.render('passwordEmailSent.ejs', {email: req.body.email});
     }
   })
 }))
@@ -136,7 +136,7 @@ router.get('/reset/:token', catchAsync(async(req,res)=>{
     req.flash('error', 'Password reset token is invalid or has expired.');
     return res.redirect('/forgot');
   }
-  return res.render('reset.ejs', { user});
+  return res.render('passwordReset.ejs', { user});
 }))
 
 

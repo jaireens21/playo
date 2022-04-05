@@ -20,7 +20,7 @@ router.get('/', isLoggedIn, catchAsync(async(req,res)=>{
     const todayString=new Date().toLocaleDateString('en-CA');
     const startDateString=arena.startDate.toLocaleDateString('en-CA');
     const endDateString=arena.endDate.toLocaleDateString('en-CA');
-    return res.render('book.ejs', {arena,todayString,startDateString, endDateString});
+    return res.render('bookArena.ejs', {arena,todayString,startDateString, endDateString});
 }))
 
 
@@ -82,7 +82,7 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
       i=i+arena.duration;
     }
     // console.log(availableTimeSlots);
-    return res.render('booking.ejs', {arena,sport,bookingDateStr,availableTimeSlots});
+    return res.render('bookingArena.ejs', {arena,sport,bookingDateStr,availableTimeSlots});
 } ))
 
 
@@ -121,7 +121,7 @@ router.post('/', isLoggedIn, catchAsync(async(req,res)=>{
       }
     })
 
-    return res.render('booked.ejs', {arena,sport,dateString,time});
+    return res.render('bookedArena.ejs', {arena,sport,dateString,time});
 } ))
   
 
