@@ -1,8 +1,30 @@
 <%- layout('./layout/boilerplate.ejs') %>
+<div class="mx-auto my-5 myProfileDiv">
+    <h1 class="text-center">My Profile</h1>
+    
+    <table class="table table-striped w-75 mx-auto my-5">
+        
+        <tbody>
+          <tr>
+            <th scope="row">Username:</th>
+            <td><%=user.username%></td>
+            
+          </tr>
+          <tr>
+            <th scope="row">Email id:</th>
+            <td><%=user.email%></td>
+            
+          </tr>
+          <tr>
+            <th scope="row">Options:</th>
+            
+            <td><a href="#">Change Password</a></td>
+          </tr>
+        </tbody>
+      </table>
 
-<h1>hello.will show user details here</h1>
-<p><%=user.username%></p>
-<p><%=user.email%></p>
 
-<a href="#">Change Password</a>
+    
+</div>
+
 

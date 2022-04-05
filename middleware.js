@@ -63,10 +63,11 @@ module.exports.validateArenaData= (req,res,next)=>{
       let today=new Date();
       today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
       let todayStr=today.toLocaleDateString("en-CA");
-      if(startDate<todayStr){
-        next(new myError(400,'First Date of Booking cannot be earlier than today!'));
-      }
-      else if(endDate<startDate){
+      // if(startDate<todayStr){
+      //   next(new myError(400,'First Date of Booking cannot be earlier than today!'));
+      // }
+      // else 
+      if(endDate<startDate){
         next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
       }
       else if(parseFloat(endTiming)<parseFloat(startTiming)){

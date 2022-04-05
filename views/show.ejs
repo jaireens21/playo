@@ -90,14 +90,16 @@
   <div class="showpageControls d-flex flex-row flex-wrap justify-content-start">
     
     <% if (loggedUser && arena.owner.equals(loggedUser._id)){ %> 
-    <a href="/arenas/<%=arena._id%>/edit" class="btn btn-primary me-3 mb-3">Edit Arena Details</a>
-    
-    <form method="POST" action="/arenas/<%=arena._id%>?_method=DELETE">
-      <button class="btn btn-danger me-3 mb-3" type="submit" onclick=<% ()=>(confirm('Are you you want to delete this Arena?')) %> >DELETE</button>
-    </form>
-    <% } %> 
+      <a href="/arenas/<%=arena._id%>/edit" class="btn btn-primary me-3 mb-3">Edit Arena Details</a>
+      
+      <form method="POST" action="/arenas/<%=arena._id%>?_method=DELETE" onsubmit="return confirm('Are you sure you want to delete this arena?')">
+        <button class="btn btn-danger me-3 mb-3 deleteBtn" type="submit">DELETE</button>
+      </form>
+      <a href="/users/<%=loggedUser._id%>/arenas" class="btn btn-secondary me-3 mb-3">My Arenas</a>
+    <% } %>
+     
     <a href="/arenas/<%=arena._id%>/book" class="btn btn-success me-3 mb-3">Book Now</a>
-    <a href="/arenas" class="btn btn-dark mb-3">Back to all Arenas</a>
+    <a href="/arenas" class="btn btn-dark mb-3">View All Arenas</a>
     
   </div>
 

@@ -74,11 +74,17 @@
     font-weight: 500;
 }
 
+.myProfileDiv{
+    width:75%;
+}
 
 
 @media(min-width:768px){
     .bookingForm{
         width:50%;
+    }
+    .myBookingsDiv{
+        width:60%;
     }
 }
 @media(min-width:992px){
@@ -100,4 +106,9 @@
         max-width: 30%;
         margin:3rem 0 3rem 1rem;
     }
+    .myProfileDiv{
+        width:50%;
+    }
+    
+    
 }
