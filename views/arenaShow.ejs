@@ -64,7 +64,13 @@
       <div class="card mb-5">
         <div class="card-header ">TIMINGS</div>
         <ul class="list-group list-group-flush">
-          <li class="list-group-item"><%= arena.startTiming%1==0?arena.startTiming:arena.startTiming-0.5 %> : <%= arena.startTiming%1==0?'00':'30' %> to <%= arena.endTiming%1==0?arena.endTiming:arena.endTiming-0.5 %> : <%= arena.endTiming%1==0?'00':'30' %> hrs </li>
+          <li class="list-group-item">
+            <% if(arena.startTiming<10){ %> 
+              <%= arena.startTiming%1==0?'0'+arena.startTiming:'0'+(arena.startTiming-0.5) %>:<%= arena.startTiming%1==0?'00':'30' %> to <%= arena.endTiming%1==0?arena.endTiming:arena.endTiming-0.5 %>:<%= arena.endTiming%1==0?'00':'30' %> hrs 
+            <% }else{ %> 
+              <%= arena.startTiming%1==0?arena.startTiming:arena.startTiming-0.5 %>:<%= arena.startTiming%1==0?'00':'30' %> to <%= arena.endTiming%1==0?arena.endTiming:arena.endTiming-0.5 %>:<%= arena.endTiming%1==0?'00':'30' %> hrs 
+            <% } %> 
+          </li>
         </ul>
       </div>
 
