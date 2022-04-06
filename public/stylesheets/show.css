@@ -81,6 +81,12 @@
     width:75%;
 }
 
+.toggleDisplay.hidden{
+    display: none;
+}
+#arrow{
+    cursor: pointer;
+}
 @media(min-width:768px){
     .bookingForm{
         width:50%;

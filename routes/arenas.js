@@ -112,8 +112,9 @@ router.get('/:id/bookings',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
     sbooking.bookings.sort((a,b)=>{ return (a.date-b.date);});
   }
   await arena.save();
+  let today=new Date();
   
-  return res.render('arenaBookings.ejs', {arena,userId:req.user._id});
+  return res.render('arenaBookings.ejs', {arena,userId:req.user._id,today});
 }))
 
 router.route('/:id')

@@ -227,10 +227,11 @@ router.get('/users/:id/bookings',isLoggedIn, catchAsync(async(req,res)=>{
     hasBookings=true;
     //sorting function (a,b)=>(a-b);
     //sort bookings by date, before display
-    user.bookings.sort((a,b)=>{ return (b.date-a.date);});
+    user.bookings.sort((a,b)=>{ return (a.date-b.date);});
     await user.save();
   }
-  return res.render('userBookings', {user, hasBookings});
+  let today=new Date();
+  return res.render('userBookings', {user, hasBookings,today});
 
 }) )
 

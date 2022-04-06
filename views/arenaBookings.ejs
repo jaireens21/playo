@@ -1,52 +1,86 @@
 <%- layout('./layout/boilerplate.ejs') %>
 
 <div class="mx-auto my-3 arenaBookingsDiv">
-    <h1 class="text-center">Arena Bookings</h1>
-    <h2 class="text-center mb-3"> <%=arena.name%>,<%=arena.location%> </h2>
-          
-    <% for(let sbooking of arena.sportBookings){ %> 
-      <h2><%=sbooking.sport%> </h2>
-      <%if (sbooking.bookings.length>0){%>
-        <table class="table table-hover mb-5 mx-auto">
-          <thead>
+  <h1 class="text-center">Arena Bookings : <%=arena.name%></h1>
+  <p class="text-center fs-4"><%=arena.location%></p>
+  
+        
+  <% for(let sbooking of arena.sportBookings){ %> 
+    <h2 class="mt-5 text-uppercase text-decoration-underline"> <%=sbooking.sport%> </h2>
+    <%if (sbooking.bookings.length>0){%>
+      <h3 class="fs-4">Upcoming bookings</h2>
+      <table class="table table-hover mb-5 mx-auto">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Date</th>
+            <th scope="col">Time (hrs)</th>
+            <th scope="col">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%let j=0; for (let i=0;i<sbooking.bookings.length;++i){ if(sbooking.bookings[i].date>today){++j; %>
             <tr>
-              <th scope="col">#</th>
-              <th scope="col">Date</th>
-              <th scope="col">Time (hrs)</th>
-              <th scope="col">Remarks</th>
-              <!-- <th scope="col">Arena</th> -->
-              <!-- <th scope="col">Location</th> -->
-            </tr>
-          </thead>
-          <tbody>
-            <%for (let i=0;i<sbooking.bookings.length;++i){ %>
-              <tr>
-                <th scope="row"><%=i+1%></th>
-                <!-- date -->
-                <td><%=(sbooking.bookings[i].date.getMonth()+1)<10? '0'+(sbooking.bookings[i].date.getMonth()+1) : (sbooking.bookings[i].date.getMonth()+1) %>-<%= sbooking.bookings[i].date.getDate()<10?'0'+sbooking.bookings[i].date.getDate():sbooking.bookings[i].date.getDate() %>-<%=sbooking.bookings[i].date.getFullYear()%></td>
+              <th scope="row"><%=j%></th>
+              <!-- date -->
+              <td><%=(sbooking.bookings[i].date.getMonth()+1)<10? '0'+(sbooking.bookings[i].date.getMonth()+1) : (sbooking.bookings[i].date.getMonth()+1) %>-<%= sbooking.bookings[i].date.getDate()<10?'0'+sbooking.bookings[i].date.getDate():sbooking.bookings[i].date.getDate() %>-<%=sbooking.bookings[i].date.getFullYear()%></td>
 
-                <!-- time -->
-                <td> 
-                  <% if(sbooking.bookings[i].time<10){ %> 
-                    <%= sbooking.bookings[i].time%1==0? '0' + sbooking.bookings[i].time : '0'+ (sbooking.bookings[i].time-0.5) %>:<%= sbooking.bookings[i].time%1==0?'00':'30' %>
-                  <% }else{ %> 
-                    <%= sbooking.bookings[i].time%1==0?sbooking.bookings[i].time:sbooking.bookings[i].time-0.5 %>:<%= sbooking.bookings[i].time%1==0?'00':'30' %>
-                  <% } %> 
-                    
-                </td>
-                <td>
-                  <% if (arena.owner.equals(sbooking.bookings[i].playerId._id)){ %>
-                    Booked by owner 
-                  <% } %> 
-                </td>
-              </tr>
-            <%}%>
-          </tbody>
-        </table>
-      <%} else{%>
-        <p >No Booking yet!</p>
-      <% } %>
-    <% } %> 
+              <!-- time -->
+              <td> 
+                <% if(sbooking.bookings[i].time<10){ %> 
+                  <%= sbooking.bookings[i].time%1==0? '0' + sbooking.bookings[i].time : '0'+ (sbooking.bookings[i].time-0.5) %>:<%= sbooking.bookings[i].time%1==0?'00':'30' %>
+                <% }else{ %> 
+                  <%= sbooking.bookings[i].time%1==0?sbooking.bookings[i].time:sbooking.bookings[i].time-0.5 %>:<%= sbooking.bookings[i].time%1==0?'00':'30' %>
+                <% } %> 
+              </td>
+              <td>
+                <% if (arena.owner.equals(sbooking.bookings[i].playerId._id)){ %>
+                  Booked by owner 
+                <% } %> 
+              </td>
+            </tr>
+          <%}}%>
+        </tbody>
+      </table>
+      <h3 class="fs-4">Past bookings <span id="arrow" onclick="toggleArrowDisplay(this)">&#9660;</span></h2>
+      <table class="table table-hover toggleDisplay hidden mb-5 mx-auto">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Date</th>
+            <th scope="col">Time (hrs)</th>
+            <th scope="col">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%let k=0; for (let i=0;i<sbooking.bookings.length;++i){ if(sbooking.bookings[i].date<=today){++k; %>
+            <tr>
+              <th scope="row"><%=k%></th>
+              <!-- date -->
+              <td><%=(sbooking.bookings[i].date.getMonth()+1)<10? '0'+(sbooking.bookings[i].date.getMonth()+1) : (sbooking.bookings[i].date.getMonth()+1) %>-<%= sbooking.bookings[i].date.getDate()<10?'0'+sbooking.bookings[i].date.getDate():sbooking.bookings[i].date.getDate() %>-<%=sbooking.bookings[i].date.getFullYear()%></td>
+
+              <!-- time -->
+              <td> 
+                <% if(sbooking.bookings[i].time<10){ %> 
+                  <%= sbooking.bookings[i].time%1==0? '0' + sbooking.bookings[i].time : '0'+ (sbooking.bookings[i].time-0.5) %>:<%= sbooking.bookings[i].time%1==0?'00':'30' %>
+                <% }else{ %> 
+                  <%= sbooking.bookings[i].time%1==0?sbooking.bookings[i].time:sbooking.bookings[i].time-0.5 %>:<%= sbooking.bookings[i].time%1==0?'00':'30' %>
+                <% } %> 
+                  
+              </td>
+              <td>
+                <% if (arena.owner.equals(sbooking.bookings[i].playerId._id)){ %>
+                  Booked by owner 
+                <% } %> 
+              </td>
+            </tr>
+          <%}}%>
+        </tbody>
+      </table>
+    <%}else{%>
+      <p>No Booking yet!</p>
+    <% } %>
+  <% } %> 
 
     
 </div>
