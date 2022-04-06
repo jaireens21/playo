@@ -24,10 +24,17 @@
             <tr>
               <th scope="row"><%=i+1%></th>
               <!-- date -->
-              <td><%=user.bookings[i].date.getDate()%>-<%=user.bookings[i].date.getMonth()+1%>-<%=user.bookings[i].date.getFullYear()%></td>
+              <td><%=(user.bookings[i].date.getMonth()+1)<10? '0'+(user.bookings[i].date.getMonth()+1) : (user.bookings[i].date.getMonth()+1) %>-<%= user.bookings[i].date.getDate()<10?'0'+user.bookings[i].date.getDate():user.bookings[i].date.getDate() %>-<%=user.bookings[i].date.getFullYear()%></td>
 
               <!-- time -->
-              <td> <%= user.bookings[i].time%1==0?user.bookings[i].time:user.bookings[i].time-0.5 %>:<%= user.bookings[i].time%1==0?'00':'30' %> </td>
+              <td> 
+                <% if(user.bookings[i].time<10){ %> 
+                  <%= user.bookings[i].time%1==0? '0' + user.bookings[i].time : '0'+ (user.bookings[i].time-0.5) %>:<%= user.bookings[i].time%1==0?'00':'30' %>
+                <% }else{ %> 
+                  <%= user.bookings[i].time%1==0?user.bookings[i].time:user.bookings[i].time-0.5 %>:<%= user.bookings[i].time%1==0?'00':'30' %>
+                <% } %> 
+                 
+              </td>
 
               <!-- sport -->
               <td><%=user.bookings[i].sport%></td>

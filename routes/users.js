@@ -225,6 +225,10 @@ router.get('/users/:id/bookings',isLoggedIn, catchAsync(async(req,res)=>{
   let hasBookings=false;
   if(user.bookings.length>0){
     hasBookings=true;
+    //sorting function (a,b)=>(a-b);
+    //sort bookings by date, before display
+    user.bookings.sort((a,b)=>{ return (b.date-a.date);});
+    await user.save();
   }
   return res.render('userBookings', {user, hasBookings});
 
