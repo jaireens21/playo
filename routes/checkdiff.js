@@ -12,9 +12,8 @@
     let hasBookings= arena.sportBookings.some(sbooking=>sbooking.bookings.length>0);
 
     if(hasBookings){
-    //Then, check if any of the following have been changed: sports,price,start date, enddate, startTiming,endTiming
+    //Then, check if any of the following have been changed: sports,start date, endDate, startTiming,endTiming
     let sportsChanged= false;
-    let priceChanged=false;
     let startDateChanged=false;
     let endDateChanged=false;
     let startTimingChanged=false;

@@ -77,7 +77,9 @@
 .myProfileDiv{
     width:75%;
 }
-
+.arenaBookingsDiv{
+    width:75%;
+}
 
 @media(min-width:768px){
     .bookingForm{
@@ -85,6 +87,9 @@
     }
     .myBookingsDiv{
         width:60%;
+    }
+    .arenaBookingsDiv{
+        width:40%;
     }
 }
 @media(min-width:992px){

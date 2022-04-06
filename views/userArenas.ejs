@@ -13,6 +13,9 @@
                             <h5 class="card-title"><%=arena.name%></h5>
                             <p class="card-text"><%=arena.location%></p>
                             <a href="/arenas/<%=arena._id%>" class="btn btn-primary">View Details</a>
+                            <% if (loggedUser && arena.owner.equals(loggedUser._id)){ %> 
+                                <a href="/arenas/<%=arena._id%>/bookings" class="btn btn-secondary">View Bookings</a>
+                            <% } %> 
                         </div>
                     </div>
                 </div>

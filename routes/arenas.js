@@ -99,7 +99,22 @@ router.get('/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
     return res.render('arenaEdit.ejs', {arena:foundArena, startDateString, endDateString});
 }))
 
-
+//show arena's bookings
+router.get('/:id/bookings',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
+  const arena=await Arena.findById(req.params.id).populate({path:'sportBookings', populate:{path:'bookings', populate:{path:'playerId'}}});
+  if(!arena){
+    req.flash('error', 'Cannot find that arena!');
+    return res.redirect('/arenas');
+  }
+  
+  //sort bookings by date, before display
+  for(let sbooking of arena.sportBookings){
+    sbooking.bookings.sort((a,b)=>{ return (a.date-b.date);});
+  }
+  await arena.save();
+  
+  return res.render('arenaBookings.ejs', {arena,userId:req.user._id});
+}))
 
 router.route('/:id')
         //show details of an arena
