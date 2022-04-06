@@ -56,7 +56,7 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
       req.flash("error", "Booking date is not valid!");
       return res.redirect(`/arenas/${arena._id}/book`);
     }
-      
+    
     let reservations= arena.sportBookings.find(obj=>obj.sport===sport).bookings.filter(booking=>{
       let str= booking.date.toLocaleDateString("en-CA");
       if (str===bookingDateStr){
@@ -69,9 +69,10 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
   
     let availableTimeSlots=[]; let i;
     if(todayStr===bookingDateStr){
-      //if the booking date is today:
-      //display only slots available after currentTimeInHours +1 hour
-      i= currentTimeInHours+1;
+      //If the booking date is today:
+      //display only the slots available after currentTimeInHours +1 hour or 1.5 hour 
+      //(depending on if the start timing was a full hour or a half hour)
+      i= (arena.startTiming%1===0?currentTimeInHours+1:currentTimeInHours+1.5) ;
     }else{
       i=arena.startTiming;
     }
@@ -88,11 +89,13 @@ router.post('/check', isLoggedIn, validateBookingFormData, catchAsync(async(req,
 
 //create booking for arena
 router.post('/', isLoggedIn, catchAsync(async(req,res)=>{
-    const arena=await Arena.findById(req.params.id);
+    
     const {sport,time}=req.body;
     let date=createDateObj(req.body.date);
     let dateString=date.toLocaleDateString("en-CA");
-  
+
+    
+    const arena=await Arena.findById(req.params.id);
     arena.sportBookings.find(obj=>obj.sport===sport).bookings.push({date,time,playerId:req.user._id});
     await arena.save();
 
