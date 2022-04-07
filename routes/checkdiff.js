@@ -40,8 +40,8 @@
           for(let i=0; i<(startDate-arena.startDate)/(1000 * 60 * 60 * 24);++i){
             
             //missingDates should be arena.startDate, +1, +1.... upto startDate-1
-            let missedDate=new Date();
-            missedDate.setDate(arena.startDate.getDate()+i); //incrementing from arena.startDate
+            let missedDate=new Date(arena.startDate.toLocaleDateString("en-CA"));
+            missedDate.setDate(arena.startDate.getUTCDate()+i); //incrementing from arena.startDate
             missedDate.setUTCHours(10);missedDate.setUTCMinutes(0);missedDate.setUTCSeconds(0);
             missedDate.setUTCMilliseconds(0);
             missingDates.push(missedDate.toLocaleDateString("en-CA"));
@@ -64,8 +64,8 @@
           //no. of missing days= (arena.endDate-endDate)/(1000 * 60 * 60 * 24)
           console.log("arena.endDate",arena.endDate);
           for (let i=1;i<=((arena.endDate-endDate)/(1000 * 60 * 60 * 24));++i){
-            let missedDate=new Date();
-            missedDate.setDate(endDate.getDate()+i); //incrementing from endDate+1
+            let missedDate=new Date(endDate.toLocaleDateString("en-CA"));
+            missedDate.setDate(endDate.getUTCDate()+i); //incrementing from endDate+1
             missedDate.setUTCHours(10);missedDate.setUTCMinutes(0);missedDate.setUTCSeconds(0);
             missedDate.setUTCMilliseconds(0);
             missingDates.push(missedDate.toLocaleDateString("en-CA"));
@@ -113,7 +113,7 @@
         }
       })
       console.log('commonDates', commonDates);
-      
+
       //now look for bookings on these common dates that might get affected due to change of timings
       if(commonDates.length>0){
         let start1=undefined; let start2=undefined; let end1=undefined; let end2=undefined;

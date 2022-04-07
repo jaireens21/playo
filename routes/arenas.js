@@ -168,7 +168,7 @@ router.route('/:id')
             for(let i=0; i<(startDate-arena.startDate)/(1000 * 60 * 60 * 24);++i){
               
               //missingDates should be arena.startDate, +1, +1.... upto startDate-1
-              let missedDate=new Date();
+              let missedDate=new Date(arena.startDate.toLocaleDateString("en-CA"));
               missedDate.setDate(arena.startDate.getDate()+i); //incrementing from arena.startDate
               missedDate.setUTCHours(10);missedDate.setUTCMinutes(0);missedDate.setUTCSeconds(0);
               missedDate.setUTCMilliseconds(0);
@@ -194,7 +194,7 @@ router.route('/:id')
             console.log("endDate",endDate);
             console.log("arena endDate",arena.endDate);
             for (let i=1;i<=((arena.endDate-endDate)/(1000 * 60 * 60 * 24));++i){
-              let missedDate=new Date();
+              let missedDate=new Date(endDate.toLocaleDateString("en-CA"));
               missedDate.setDate(endDate.getDate()+i); //incrementing from endDate+1
               missedDate.setUTCHours(10);missedDate.setUTCMinutes(0);missedDate.setUTCSeconds(0);
               missedDate.setUTCMilliseconds(0);
@@ -220,24 +220,28 @@ router.route('/:id')
             });
           })
         }
+        console.log("conflictingBookings due to missing dates",conflictingBookings);
 
         //there might be bookings in the time range which is now closed
         //this will happen on dates that are common between old dates & new dates
         //find these common dates:
         let oldDates=[];
-        for (let i=0;i<((arena.startDate-arena.endDate)/(1000 * 60 * 60 * 24));++i){
-          let aDate=new Date();
-          aDate.setDate(arena.startDate.getDate()+i); //incrementing from arena.startDate
+        
+        for (let i=0;i<=((arena.endDate- arena.startDate)/(1000 * 60 * 60 * 24));++i){
+          let aDate=new Date(arena.startDate.toLocaleDateString("en-CA"));
+          aDate.setDate(aDate.getDate()+i); //incrementing from arena.startDate
           aDate.setUTCHours(10);aDate.setUTCMinutes(0);aDate.setUTCSeconds(0);aDate.setUTCMilliseconds(0);
           oldDates.push(aDate.toLocaleDateString("en-CA"));
         }
         let newDates=[];
-        for (let i=0;i<((startDate-endDate)/(1000 * 60 * 60 * 24));++i){
-          let aDate=new Date();
-          aDate.setDate(startDate.getDate()+i); //incrementing from startDate
-          aDate.setUTCHours(10);aDate.setUTCMinutes(0);aDate.setUTCSeconds(0);aDate.setUTCMilliseconds(0);
-          newDates.push(aDate.toLocaleDateString("en-CA"));
+        
+        for (let i=0;i<=((endDate-startDate)/(1000 * 60 * 60 * 24));++i){
+          let bDate=new Date(startDate.toLocaleDateString("en-CA"));
+          bDate.setDate(bDate.getDate()+i); //incrementing from startDate
+          bDate.setUTCHours(10);bDate.setUTCMinutes(0);bDate.setUTCSeconds(0);bDate.setUTCMilliseconds(0);
+          newDates.push(bDate.toLocaleDateString("en-CA"));
         }
+        console.log('old dates:',oldDates,'new dates:', newDates);
         let commonDates=[];
         newDates.forEach(newDt=>{
           if(oldDates.indexOf(newDt)!==-1){
@@ -284,26 +288,27 @@ router.route('/:id')
             arena.sportBookings.forEach(sbooking=>{
               sbooking.bookings.forEach(bkng=>{
                 if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-                  if(bkng.time>=start1 || bkng.time<=start2){
+                  if(bkng.time>=start1 && bkng.time<=start2){
                     conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
                   }
                 }
               });
             })
           }
+          console.log("added conflictingBookings due to start time",conflictingBookings);
           if (end1){
             //find bookings on common dates, in the time between end1 to end2
             arena.sportBookings.forEach(sbooking=>{
               sbooking.bookings.forEach(bkng=>{
                 if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-                  if(bkng.time>=end1 || bkng.time<=end2){
+                  if(bkng.time>=end1 && bkng.time<=end2){
                     conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
                   }
                 }
               });
             })
           }
-          
+          console.log("added conflictingBookings due to end time",conflictingBookings);
           //if a sport has been removed, common dates may have bookings that get affected
 
           //checking if any sport has been removed
@@ -329,9 +334,10 @@ router.route('/:id')
             })
           }
         }
+        console.log("added conflictingBookings due to missing sport",conflictingBookings);
 
-
-        console.log("conflictingBookings",conflictingBookings);
+        conflictingBookings.sort((a,b)=>(a.date-b.date));
+        console.log("sorted conflictingBookings",conflictingBookings);
 
 
         
