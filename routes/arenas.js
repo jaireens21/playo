@@ -139,14 +139,7 @@ router.route('/:id')
         let {startDate,endDate}=req.body.arena;
         startDate=createDateObj(startDate);
         endDate=createDateObj(endDate);
-        //checking if any sport has been removed
-        let missingSport=[];
-        for(let i=0;i<arena.sports.length;++i){
-          if (sports.indexOf(arena.sports[i])===-1){
-            missingSport.push(arena.sports[i]);
-          }
-        }
-        console.log(missingSport);
+        
 
         let missingDates=[];
       
@@ -169,7 +162,8 @@ router.route('/:id')
             // arena.startDate < startDate <= arena.endDate
             //there are missing dates, from arena.startDate upto startDate
             //number of missing days= (startDate-arena.startDate)/(1000 * 60 * 60 * 24)
-            console.log("arena.startDate",arena.startDate);
+            console.log("startDate",startDate);
+            console.log("arena startDate",arena.startDate);
             
             for(let i=0; i<(startDate-arena.startDate)/(1000 * 60 * 60 * 24);++i){
               
@@ -178,7 +172,8 @@ router.route('/:id')
               missedDate.setDate(arena.startDate.getDate()+i); //incrementing from arena.startDate
               missedDate.setUTCHours(10);missedDate.setUTCMinutes(0);missedDate.setUTCSeconds(0);
               missedDate.setUTCMilliseconds(0);
-              missingDates.push(missedDate);
+              missingDates.push(missedDate.toLocaleDateString("en-CA"));
+              //saving as a string so that equality can be checked later on
             }
           }
         }
@@ -196,52 +191,147 @@ router.route('/:id')
           else if (endDate<arena.endDate){
             //there are missing dates, from endDate+1 upto arena.endDate
             //no. of missing days= (arena.endDate-endDate)/(1000 * 60 * 60 * 24)
-            console.log("arena.endDate",arena.endDate);
+            console.log("endDate",endDate);
+            console.log("arena endDate",arena.endDate);
             for (let i=1;i<=((arena.endDate-endDate)/(1000 * 60 * 60 * 24));++i){
               let missedDate=new Date();
               missedDate.setDate(endDate.getDate()+i); //incrementing from endDate+1
               missedDate.setUTCHours(10);missedDate.setUTCMinutes(0);missedDate.setUTCSeconds(0);
               missedDate.setUTCMilliseconds(0);
-              missingDates.push(missedDate);
+              console.log("missed date",missedDate);
+              missingDates.push(missedDate.toLocaleDateString("en-CA"));
+              //saving as a string so that equality can be checked later on
             }
 
           }
         }
         
-        console.log(missingDates);
+        console.log("missingDates",missingDates);
 
-        let missingTimeSlots={start1:-1,start2:-1,end1:-1,end2:-1};
-        //missingTimeSlots will exist on new dates
-        //start1 to start2 - range of missing times due to change in startTiming
-        //end1 to end2- range of missing times due to change in endTiming
+        let conflictingBookings=[];
 
-        //check if startTiming has changed
-        if(parseFloat(startTiming)!==arena.startTiming){
-          if(parseFloat(startTiming)<arena.startTiming){
-            console.log("opening more slots! all OK");
+        //conflicting bookings on dates that have now been closed (for all sports, all timings)
+        if(missingDates.length>0){
+          arena.sportBookings.forEach(sbooking=>{
+            sbooking.bookings.forEach(bkng=>{
+              if(missingDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
+                conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
+              }
+            });
+          })
+        }
+
+        //there might be bookings in the time range which is now closed
+        //this will happen on dates that are common between old dates & new dates
+        //find these common dates:
+        let oldDates=[];
+        for (let i=0;i<((arena.startDate-arena.endDate)/(1000 * 60 * 60 * 24));++i){
+          let aDate=new Date();
+          aDate.setDate(arena.startDate.getDate()+i); //incrementing from arena.startDate
+          aDate.setUTCHours(10);aDate.setUTCMinutes(0);aDate.setUTCSeconds(0);aDate.setUTCMilliseconds(0);
+          oldDates.push(aDate.toLocaleDateString("en-CA"));
+        }
+        let newDates=[];
+        for (let i=0;i<((startDate-endDate)/(1000 * 60 * 60 * 24));++i){
+          let aDate=new Date();
+          aDate.setDate(startDate.getDate()+i); //incrementing from startDate
+          aDate.setUTCHours(10);aDate.setUTCMinutes(0);aDate.setUTCSeconds(0);aDate.setUTCMilliseconds(0);
+          newDates.push(aDate.toLocaleDateString("en-CA"));
+        }
+        let commonDates=[];
+        newDates.forEach(newDt=>{
+          if(oldDates.indexOf(newDt)!==-1){
+            commonDates.push(newDt);
           }
-          else if(parseFloat(startTiming)>arena.startTiming) {
-            //there is time that is missing, from arena.startTiming till startTiming-arena.duration.
-            //NOTE: using OLD duration (arena.duration) since we will look for EXISTING bookings
-            missingTimeSlots.start1=arena.startTiming;
-            missingTimeSlots.start2=parseFloat(startTiming)-arena.duration;
+        });
+        console.log('commonDates', commonDates);
+
+        //now look for bookings on these common dates that might get affected due to change of timings/removal of a sport
+        if(commonDates.length>0){
+          let start1=undefined; let start2=undefined; let end1=undefined; let end2=undefined;
+          //missingTimeSlots will exist on OVERLAPPING dates (dates that are common in old & new date ranges)
+          //start1 to start2 - range of missing times due to change in startTiming
+          //end1 to end2- range of missing times due to change in endTiming
+
+          //check if startTiming has changed
+          if(parseFloat(startTiming)!==arena.startTiming){
+            if(parseFloat(startTiming)<arena.startTiming){
+              console.log("opening more slots! all OK");
+            }
+            else if(parseFloat(startTiming)>arena.startTiming) {
+              //there is time that is missing, from arena.startTiming till startTiming-arena.duration.
+              //NOTE: using OLD duration (arena.duration) since we will look for EXISTING bookings
+              start1=arena.startTiming;
+              start2=parseFloat(startTiming)-arena.duration;
+            }
+          }
+          //check if endTiming has changed
+          if(parseFloat(endTiming)!==arena.endTiming){
+            if(parseFloat(endTiming)>arena.endTiming){
+              console.log("opening more slots! all OK");
+            }
+            else if(parseFloat(endTiming)<arena.endTiming) {
+              //there is missing time, from endTiming+arena.duration till arena.endTiming.
+              //NOTE: using OLD duration (arena.duration) since we will look for EXISTING bookings
+              end1=parseFloat(endTiming)+arena.duration;
+              end2=arena.endTiming;
+            }
+          }
+          console.log('start-endtimes',start1,start2,end1,end2);
+          
+          if (start1){
+            //find bookings on common dates, in the time between start1 to start2 
+            arena.sportBookings.forEach(sbooking=>{
+              sbooking.bookings.forEach(bkng=>{
+                if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
+                  if(bkng.time>=start1 || bkng.time<=start2){
+                    conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
+                  }
+                }
+              });
+            })
+          }
+          if (end1){
+            //find bookings on common dates, in the time between end1 to end2
+            arena.sportBookings.forEach(sbooking=>{
+              sbooking.bookings.forEach(bkng=>{
+                if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
+                  if(bkng.time>=end1 || bkng.time<=end2){
+                    conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
+                  }
+                }
+              });
+            })
+          }
+          
+          //if a sport has been removed, common dates may have bookings that get affected
+
+          //checking if any sport has been removed
+          let missingSport=[];
+          for(let i=0;i<arena.sports.length;++i){
+            if (sports.indexOf(arena.sports[i])===-1){
+              missingSport.push(arena.sports[i]);
+            }
+          }
+          console.log('missingSport',missingSport);
+          //look for bookings for missing sport on common dates
+          if(missingSport.length>0){
+            arena.sportBookings.forEach(sbooking=>{
+              if(missingSport.indexOf(sbooking.sport)!==-1){
+                //find the bookings for the missing sport
+                sbooking.bookings.forEach(bkng=>{
+                  //filter out booking that falls on a common date
+                  if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
+                    conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
+                  }
+                });
+              }
+            })
           }
         }
-        //check if endTiming has changed
-        if(parseFloat(endTiming)!==arena.endTiming){
-          if(parseFloat(endTiming)>arena.endTiming){
-            console.log("opening more slots! all OK");
-          }
-          else if(parseFloat(endTiming)<arena.endTiming) {
-            //there is missing time, from endTiming+arena.duration till arena.endTiming.
-            //NOTE: using OLD duration (arena.duration) since we will look for EXISTING bookings
-            missingTimeSlots.end1=parseFloat(endTiming)+arena.duration;
-            missingTimeSlots.end2=arena.endTiming;
-          }
-        }
-        console.log(missingTimeSlots);
 
 
+        console.log("conflictingBookings",conflictingBookings);
 
 
         
