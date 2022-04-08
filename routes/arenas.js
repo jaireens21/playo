@@ -102,7 +102,7 @@ router.get('/:id/bookings',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
   }
 
   let today=new Date(); let todayStr=today.toLocaleDateString("en-CA");
-  
+
   let upcomingBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")>todayStr).sort((a,b)=>(a.date-b.date));
   let pastBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")<=todayStr).sort((a,b)=>(a.date-b.date));
   
@@ -134,19 +134,6 @@ router.route('/:id')
           return res.redirect('/arenas');
         }
         
-        let newSports=[];
-        for(let i=0;i<sports.length;++i){
-          if (arena.sports.indexOf(sports[i])===-1){
-            newSports.push(sports[i]);
-          }
-        }
-        //push in an empty sportBooking object for new sports
-        if(newSports.length>0){
-          for(let sport of newSports){
-            arena.sportBookings.push({sport: sport, bookings:[]});
-          }
-        }
-        
         //First Date of Booking cannot be changed to a date earlier than today
         let today=new Date(); today=setMyTime(today); 
         if(startDate.toLocaleDateString!==arena.startDate.toLocaleDateString && startDate.toLocaleDateString<today.toLocaleDateString){
@@ -155,7 +142,8 @@ router.route('/:id')
         }
 
         let conflictingBookings=findConflictingBookings(arena,sports,startTiming,endTiming,startDate,endDate);
-           
+        
+        arena.sports=sports;
         arena.startDate=startDate;
         arena.endDate=endDate;
         arena.startTiming=startTiming;
