@@ -3,6 +3,8 @@ const router=express.Router({mergeParams: true});//make sure to add mergeParams:
 
 const catchAsync=require('../utils/catchAsync.js');
 const createDateObj=require('../utils/createDateObj');
+const setMyTime=require('../utils/setMyTime');
+const findConflictingBookings=require('../utils/findConflictingBookings');
 
 const Arena=require('../models/arena');
 
@@ -106,7 +108,7 @@ router.get('/:id/bookings',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas');
   }
-  
+
   //sort bookings by date, before display
   for(let sbooking of arena.sportBookings){
     sbooking.bookings.sort((a,b)=>{ return (a.date-b.date);});
@@ -131,164 +133,45 @@ router.route('/:id')
         //save edited arena's details
     .put(isLoggedIn, isOwner, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
         const {name,location,description,price,sports,startTiming,endTiming,duration}=req.body.arena;
-        let arena= await Arena.findByIdAndUpdate(req.params.id, {name,location,description,price,sports,startTiming,endTiming,duration});
+        let {startDate,endDate}=req.body.arena;
+        startDate=createDateObj(startDate);
+        endDate=createDateObj(endDate);
+
+        let arena= await Arena.findByIdAndUpdate(req.params.id, {name,location,description,price});
+        
         if (!arena){
           req.flash('error', 'Cannot find that arena!');
           return res.redirect('/arenas');
         }
-        let {startDate,endDate}=req.body.arena;
-        startDate=createDateObj(startDate);
-        endDate=createDateObj(endDate);
         
-        let today=new Date();today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
+        let newSports=[];
+        for(let i=0;i<sports.length;++i){
+          if (arena.sports.indexOf(sports[i])===-1){
+            newSports.push(sports[i]);
+          }
+        }
+        //push in an empty sportBooking object for new sports
+        if(newSports.length>0){
+          for(let sport of newSports){
+            arena.sportBookings.push({sport: sport, bookings:[]});
+          }
+        }
+        
+        //First Date of Booking cannot be changed to a date earlier than today
+        let today=new Date(); today=setMyTime(today); 
         if(startDate.toLocaleDateString!==arena.startDate.toLocaleDateString && startDate.toLocaleDateString<today.toLocaleDateString){
           req.flash('error','First Date of Booking cannot be changed to a date earlier than today!');
-          return res.redirect(`/arenas/${arena._id}/edit`)
+          return res.redirect(`/arenas/${arena._id}/edit`);
         }
 
-        let missingDates=[];
-        let commonDates=[];
-
-        let oldDates=[];
-        for (let i=0;i<=((arena.endDate- arena.startDate)/(1000 * 60 * 60 * 24));++i){
-          let aDate=new Date(arena.startDate.toLocaleDateString("en-CA"));
-          aDate.setDate(aDate.getDate()+i); //incrementing from arena.startDate
-          aDate.setUTCHours(10);aDate.setUTCMinutes(0);aDate.setUTCSeconds(0);aDate.setUTCMilliseconds(0);
-          oldDates.push(aDate.toLocaleDateString("en-CA"));
-        }
-
-        let newDates=[];
-        for (let i=0;i<=((endDate-startDate)/(1000 * 60 * 60 * 24));++i){
-          let bDate=new Date(startDate.toLocaleDateString("en-CA"));
-          bDate.setDate(bDate.getDate()+i); //incrementing from startDate
-          bDate.setUTCHours(10);bDate.setUTCMinutes(0);bDate.setUTCSeconds(0);bDate.setUTCMilliseconds(0);
-          newDates.push(bDate.toLocaleDateString("en-CA"));
-        }
-
-        console.log('old dates:',oldDates,'new dates:', newDates);
-
-        newDates.forEach(newDt=>{
-          if(oldDates.indexOf(newDt)!==-1){
-            commonDates.push(newDt);
-          }
-        });
-        console.log('commonDates', commonDates);
-
-        if(commonDates.length>0){
-          oldDates.forEach(oldDt=>{
-            if(commonDates.indexOf(oldDt)===-1){
-              missingDates.push(oldDt);
-            }
-          })
-        }
-        console.log('missingDates', missingDates);
-
-        let conflictingBookings=[];
-
-        //conflicting bookings on missing dates (for all sports, all timings)
-        if(missingDates.length>0){
-          arena.sportBookings.forEach(sbooking=>{
-            sbooking.bookings.forEach(bkng=>{
-              if(missingDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-                conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
-              }
-            });
-          })
-        }
-        console.log("conflictingBookings due to missing dates",conflictingBookings);
-
-        //now look for bookings on common dates that might get affected due to change of timings/removal of a sport
-        if(commonDates.length>0){
-          let start1=undefined; let start2=undefined; let end1=undefined; let end2=undefined;
-          //missingTimeSlots will exist on COMMON dates (dates that are common in old & new date ranges)
-          //start1 to start2 - range of missing times due to change in startTiming
-          //end1 to end2- range of missing times due to change in endTiming
-
-          //check if startTiming has changed
-          if(parseFloat(startTiming)>arena.startTiming) {
-            //there is missing time, from arena.startTiming till startTiming-arena.duration.
-            //NOTE: using OLD duration (arena.duration) since we will look for EXISTING bookings
-            start1=arena.startTiming;
-            start2=parseFloat(startTiming)-arena.duration;
-          }
-          
-          //check if endTiming has changed
-          if(parseFloat(endTiming)<arena.endTiming) {
-            //there is missing time, from endTiming+arena.duration till arena.endTiming.
-            //NOTE: using OLD duration (arena.duration) since we will look for EXISTING bookings
-            end1=parseFloat(endTiming)+arena.duration;
-            end2=arena.endTiming;
-          }
-          
-          console.log('start-endtimes',start1,start2,end1,end2);
-          
-          if (start1){
-            //find bookings on common dates, in the time between start1 to start2 
-            arena.sportBookings.forEach(sbooking=>{
-              sbooking.bookings.forEach(bkng=>{
-                if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-                  if(bkng.time>=start1 && bkng.time<=start2){
-                    conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
-                  }
-                }
-              });
-            })
-          }
-          console.log("added conflictingBookings due to start time",conflictingBookings);
-          if (end1){
-            //find bookings on common dates, in the time between end1 to end2
-            arena.sportBookings.forEach(sbooking=>{
-              sbooking.bookings.forEach(bkng=>{
-                if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-                  if(bkng.time>=end1 && bkng.time<=end2){
-                    conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
-                  }
-                }
-              });
-            })
-          }
-          console.log("added conflictingBookings due to end time",conflictingBookings);
-          
-          //if a sport has been removed, common dates may have bookings that get affected
-
-          //checking if any sport has been removed
-          let missingSport=[];
-          for(let i=0;i<arena.sports.length;++i){
-            if (sports.indexOf(arena.sports[i])===-1){
-              missingSport.push(arena.sports[i]);
-            }
-          }
-          console.log('missingSport',missingSport);
-
-          //look for bookings for missing sport on common dates
-          if(missingSport.length>0){
-            arena.sportBookings.forEach(sbooking=>{
-              if(missingSport.indexOf(sbooking.sport)!==-1){
-                //find the bookings for the missing sport
-                sbooking.bookings.forEach(bkng=>{
-                  //filter out booking that falls on a common date
-                  if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-                    conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
-                  }
-                });
-              }
-            })
-          }
-        }
-        console.log("added conflictingBookings due to missing sport",conflictingBookings);
-
-        conflictingBookings.sort((a,b)=>(a.date-b.date));
-        console.log("sorted conflictingBookings",conflictingBookings);
-
-        //if the proposed edit is affecting existing bookings, do NOT save the edit
-        //Prompt the owner to reconsider changes!
-        if(conflictingBookings.length>0){
-          req.flash('error','Conflicts! Changes not saved!')
-          return res.render('bookingsConflicted.ejs', {cBookings:conflictingBookings, arena});
-        }
-        
+        let conflictingBookings=findConflictingBookings(arena,sports,startTiming,endTiming,startDate,endDate);
+           
         arena.startDate=startDate;
         arena.endDate=endDate;
+        arena.startTiming=startTiming;
+        arena.endTiming=endTiming;
+        arena.duration=duration;
+
         if (req.files.length > 0) {
           const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
           arena.images.push(...imgs);
@@ -315,6 +198,11 @@ router.route('/:id')
         }
         
         req.flash('success', 'Successfully updated!');
+        //if the proposed edit is affecting existing bookings: 
+        //Prompt the owner to reveiw these bookings
+        if(conflictingBookings.length>0){
+          return res.render('bookingsConflicted.ejs', {cBookings:conflictingBookings, arena});
+        }
         return res.redirect(`/arenas/${arena._id}`);
     }))
 

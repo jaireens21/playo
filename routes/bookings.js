@@ -111,12 +111,17 @@ router.post('/', isLoggedIn, catchAsync(async(req,res)=>{
         pass:process.env.EMAIL_PASSWORD
       },
     });
+    let timePart1= time<10?"0":"";
+    let timePart2= time%1===0?time:time-0.5;
+    let timePart3= time%1===0?"00":"30"
+    let timePart4="hrs";
+    let displayTime=timePart1+timePart2+timePart3+timePart4;
     const mailOptions = {
       to: req.user.email,
       from: 'jaireen.s21@gmail.com',
       subject: 'BOOKMYSPORTS : Your booking is confirmed',
       text: `Hello ${req.user.username},\n\n` +
-      `This is a confirmation email. The following arena has been booked using your BOOKMYSPORTS account ${req.user.email}:\n\n`+ `Arena: ${arena.name}, ${arena.location}\n` + `Date: ${dateString} \n` + `Time: ${time}:00 hours \n\n` + 'Have a good day!\n'
+      `This is a confirmation email. The following arena has been booked using your BOOKMYSPORTS account ${req.user.email}:\n\n`+ `Arena: ${arena.name}, ${arena.location}\n` + `Date: ${dateString} \n` + `Time: ${displayTime} \n\n` + 'Have a good day!\n'
     };
     transporter.sendMail(mailOptions,(err)=>{
       if(err){
