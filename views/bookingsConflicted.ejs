@@ -1,0 +1,48 @@
+<%- layout('./layout/boilerplate.ejs') %>
+
+<div class="mx-auto my-5 text-center myBookingsDiv">
+  <h1>Conflicted Bookings</h1>
+  
+  <p>The following bookings conflict with the changes you wish to make to the arena: <%=arena.name%>, <%=arena.location%></p>
+    
+  <table class="table table-hover mb-5 mx-auto">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Date</th>
+        <th scope="col">Time (hrs)</th>
+        <th scope="col">Sport</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      <%for (let i=0;i<cBookings.length;++i){%>
+        <tr>
+          <th scope="row"><%=i+1%></th>
+          <!-- date -->
+          <td><%=(cBookings[i].date.getMonth()+1)<10? '0'+(cBookings[i].date.getMonth()+1) : (cBookings[i].date.getMonth()+1) %>-<%= cBookings[i].date.getDate()<10?'0'+cBookings[i].date.getDate():cBookings[i].date.getDate() %>-<%=cBookings[i].date.getFullYear()%></td>
+
+          <!-- time -->
+          <td> 
+            <% if(cBookings[i].time<10){ %> 
+              <%= cBookings[i].time%1==0? '0' + cBookings[i].time : '0'+ (cBookings[i].time-0.5) %>:<%= cBookings[i].time%1==0?'00':'30' %>
+            <% }else{ %> 
+              <%= cBookings[i].time%1==0?cBookings[i].time:cBookings[i].time-0.5 %>:<%= cBookings[i].time%1==0?'00':'30' %>
+            <% } %> 
+              
+          </td>
+
+          <!-- sport -->
+          <td><%=cBookings[i].sport%></td>
+
+        </tr>
+      <%}%>
+    </tbody>
+  </table>
+
+  <p>Please re-consider your changes.</p>
+  <a href="/arenas/<%=arena._id%>" class="btn btn-dark me-3 mb-3">View Arena</a>
+  <a href="/arenas/<%=arena._id%>/edit" class="btn btn-primary me-3 mb-3">Edit Arena</a>
+  <a href="/arenas/<%=arena._id%>/bookings" class="btn btn-secondary me-3 mb-3">View Bookings</a>
+    
+</div>

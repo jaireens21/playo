@@ -37,7 +37,7 @@ module.exports.hasOwnerRole= async(req,res,next)=>{
 }
 
 
-//middleware for data validation(server-side) while making a new arena, using Joi schema
+//middleware for data validation(server-side) while making a new arena/editing arena, using Joi schema
 const arnSchema=Joi.object({
   deleteImages:Joi.array().single(), //added bcoz validation was not letting it go
     arena:Joi.object({
@@ -60,9 +60,9 @@ module.exports.validateArenaData= (req,res,next)=>{
       next(new myError(400, msg)); //call error handler with custom error
     }else{ 
       let {startDate,endDate,startTiming,endTiming}=req.body.arena;
-      let today=new Date();
-      today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
-      let todayStr=today.toLocaleDateString("en-CA");
+      // let today=new Date();
+      // today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
+      // let todayStr=today.toLocaleDateString("en-CA");
       // if(startDate<todayStr){
       //   next(new myError(400,'First Date of Booking cannot be earlier than today!'));
       // }
