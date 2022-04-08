@@ -49,13 +49,12 @@ function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,en
 
     //conflicting bookings on missing dates (for all sports, all timings)
     if(missingDates.length>0){
-        arena.sportBookings.forEach(sbooking=>{
-        sbooking.bookings.forEach(bkng=>{
-            if(missingDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-            conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
+        arena.bookings.forEach(booking=>{
+            if(missingDates.indexOf(booking.date.toLocaleDateString("en-CA"))!==-1){
+                conflictingBookings.push(booking);
             }
         });
-        })
+        
     }
     console.log("conflictingBookings due to missing dates",conflictingBookings);
 
@@ -85,29 +84,25 @@ function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,en
         console.log('start-endtimes',start1,start2,end1,end2);
         
         if (start1){
-        //find bookings on common dates, in the time between start1 to start2 
-        arena.sportBookings.forEach(sbooking=>{
-            sbooking.bookings.forEach(bkng=>{
-            if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-                if(bkng.time>=start1 && bkng.time<=start2){
-                conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
+            //find bookings on common dates, in the time between start1 to start2 
+            arena.bookings.forEach(booking=>{
+                if(commonDates.indexOf(booking.date.toLocaleDateString("en-CA"))!==-1){
+                    if(booking.time>=start1 && booking.time<=start2){
+                        conflictingBookings.push(booking);
+                    }
                 }
-            }
-            });
-        })
+            })
         }
         console.log("added conflictingBookings due to start time",conflictingBookings);
         if (end1){
-        //find bookings on common dates, in the time between end1 to end2
-        arena.sportBookings.forEach(sbooking=>{
-            sbooking.bookings.forEach(bkng=>{
-            if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-                if(bkng.time>=end1 && bkng.time<=end2){
-                conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
+            //find bookings on common dates, in the time between end1 to end2
+            arena.bookings.forEach(booking=>{
+                if(commonDates.indexOf(booking.date.toLocaleDateString("en-CA"))!==-1){
+                    if(booking.time>=end1 &&booking.time<=end2){
+                        conflictingBookings.push(booking);
+                    }
                 }
-            }
-            });
-        })
+            })
         }
         console.log("added conflictingBookings due to end time",conflictingBookings);
         
@@ -124,23 +119,12 @@ function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,en
 
         //look for bookings for missing sports on common dates
         if(missingSports.length>0){
-        arena.sportBookings.forEach(sbooking=>{
-            if(missingSports.indexOf(sbooking.sport)!==-1){
-            //find the bookings for the missing sport
-            if(sbooking.bookings.length>0){
-                sbooking.bookings.forEach(bkng=>{
-                //filter out booking that falls on a common date
-                if(commonDates.indexOf(bkng.date.toLocaleDateString("en-CA"))!==-1){
-                    conflictingBookings.push({date:bkng.date,time:bkng.time,sport:sbooking.sport});
+            arena.bookings.filter(booking=>(missingSports.indexOf(booking.sport)!==-1)).forEach(booking=>{
+                //find all bookings that fall on a common date
+                if(commonDates.indexOf(booking.date.toLocaleDateString("en-CA"))!==-1){
+                    conflictingBookings.push(booking);
                 }
-                });
-            }else{ //if there are no bookings for the removed sport
-                //remove the corrsponding sbooking from sportBookings array
-                //delete sbooking;
-                console.log("need to delete empty arrays of sportBookings");
-            }
-            }
-        })
+            });
         }
         
     }

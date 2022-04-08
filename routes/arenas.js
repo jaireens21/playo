@@ -69,18 +69,10 @@ router.post('/', isLoggedIn, hasOwnerRole, upload.array('image'), validateArenaD
     newArena.images= req.files.map( f=>( {url:f.path, filename:f.filename}) ); 
     //details of uploaded images(available on req.files thanks to multer) being added to the arena
     
-    if (typeof(sports)==="string"){ //when arena offers only 1 sport
-      newArena.sportBookings.push({sport: sports, bookings:[]});
-    }else {
-      for(let sport of sports){
-        newArena.sportBookings.push({sport: sport, bookings:[]});
-      }
-    }
-   
-    let {startDate,endDate}=req.body.arena;
-    startDate=createDateObj(startDate);
+    let {startDate,endDate}=req.body.arena;//dates come from the form as strings
+    startDate=createDateObj(startDate);//convert to date objects
     endDate=createDateObj(endDate);
-    newArena.startDate=startDate;
+    newArena.startDate=startDate;//store in DB as date objects
     newArena.endDate=endDate;
   
     await newArena.save();
@@ -103,20 +95,18 @@ router.get('/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
 
 //show arena's bookings
 router.get('/:id/bookings',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
-  const arena=await Arena.findById(req.params.id).populate({path:'sportBookings', populate:{path:'bookings', populate:{path:'playerId'}}});
+  const arena=await Arena.findById(req.params.id).populate({path:'bookings', populate:{path:'playerId'}});
   if(!arena){
     req.flash('error', 'Cannot find that arena!');
     return res.redirect('/arenas');
   }
 
-  //sort bookings by date, before display
-  for(let sbooking of arena.sportBookings){
-    sbooking.bookings.sort((a,b)=>{ return (a.date-b.date);});
-  }
-  await arena.save();
-  let today=new Date();
+  let today=new Date(); let todayStr=today.toLocaleDateString("en-CA");
   
-  return res.render('arenaBookings.ejs', {arena,userId:req.user._id,today});
+  let upcomingBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")>todayStr).sort((a,b)=>(a.date-b.date));
+  let pastBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")<=todayStr).sort((a,b)=>(a.date-b.date));
+  
+  return res.render('arenaBookings.ejs', {arena,userId:req.user._id,upcomingBookings,pastBookings});
 }))
 
 router.route('/:id')
