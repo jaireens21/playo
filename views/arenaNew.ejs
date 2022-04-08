@@ -2,7 +2,7 @@
 
     
 
-    <form method="POST" action="/arenas" class="arenaForm needs-validation" enctype="multipart/form-data" novalidate>
+    <form method="POST" action="/arenas" class="arenaForm needs-validation" enctype="multipart/form-data" onsubmit="return validateSports(event)"  novalidate>
         <h1 class="text-center">Enter Details of New Arena</h1>
         <p class="text-center fst-italic mb-0">All fields are required.</p>
         <div class="mb-3">

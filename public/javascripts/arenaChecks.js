@@ -58,3 +58,20 @@ function validateFileSize(e) {
 //     }
 // }
 
+//prevent form submission until atleast 1 sport is selected
+function validateSports(e) {
+    
+    let boxes=document.querySelectorAll('input[type=checkbox]');
+    let flag=false;
+    for(let i=0;i<boxes.length;++i){
+        if(boxes[i].checked){
+            flag=true;
+            break;
+        }
+    }
+    if(!flag){
+        alert('Please select atleast 1 sport!');
+        e.preventDefault();
+        return false;
+    }
+};
