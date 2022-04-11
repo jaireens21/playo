@@ -8,7 +8,7 @@ const findConflictingBookings=require('../utils/findConflictingBookings');
 
 const Arena=require('../models/arena');
 
-const {isLoggedIn, isOwner, hasOwnerRole, validateArenaData}=require('../middleware.js'); //importing middleware 
+const {isLoggedIn, isOwner, hasOwnerRole, validateNewArenaData,validateEditArenaData}=require('../middleware.js'); //importing middleware 
 
 
 //image uploading to cloudinary
@@ -62,7 +62,7 @@ router.get('/new', isLoggedIn, hasOwnerRole, (req,res)=>{
 
 
 //save a new arena to DB
-router.post('/', isLoggedIn, hasOwnerRole, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
+router.post('/', isLoggedIn, hasOwnerRole, upload.array('image'), validateNewArenaData, catchAsync(async(req,res)=>{
     const {name,location,description,price,sports,startTiming,endTiming,duration}=req.body.arena;
     const newArena=new Arena({name,location,description,price,sports,startTiming,endTiming,duration});
     newArena.owner=req.user._id;
@@ -121,7 +121,7 @@ router.route('/:id')
     }))
 
         //save edited arena's details
-    .put(isLoggedIn, isOwner, upload.array('image'), validateArenaData, catchAsync(async(req,res)=>{
+    .put(isLoggedIn, isOwner, upload.array('image'), validateEditArenaData, catchAsync(async(req,res)=>{
         const {name,location,description,price,sports,startTiming,endTiming,duration}=req.body.arena;
         let {startDate,endDate}=req.body.arena;
         startDate=createDateObj(startDate);

@@ -1,4 +1,4 @@
-function passwordComplexityCheck(e) {
+function passwordComplexityCheck(element) {
     // const complexityOptions = {
     //     min: 8,
     //     max: 16,
@@ -9,7 +9,7 @@ function passwordComplexityCheck(e) {
     //     requirementCount: 4, //all conditions must be met.
     // };
 
-    const password=e.value;
+    const password=element.value;
     let flag=false;
     if(password.length<8){flag=true;}
     else if(password.length>16){flag=true;}
@@ -18,27 +18,20 @@ function passwordComplexityCheck(e) {
         let hasLowerCase = /[a-z]/.test(password);
         let hasNumbers = /\d/.test(password);
         let hasNonalphas = /\W/.test(password);
-        if (hasUpperCase + hasLowerCase + hasNumbers + hasNonalphas < 4){flag:true;}
+        if (hasUpperCase + hasLowerCase + hasNumbers + hasNonalphas < 4){flag=true;}
     } 
 
     if (flag){ 
         alert('Password does not meet complexity criteria! Please try again!');
-        e.value=null;
+        element.value=null;
     }
 };
 
+//confirm that passwords match
+function confirmPassword(element){
+    if(document.getElementById('password').value !== element.value) {
+        alert('Passwords do not match!'); 
+        element.value=null;
+    }
+}
 
-function confirmNewPassword(e){
-    if(document.getElementById('newPassword').value !== document.getElementById('confirm').value) {
-        alert('Passwords do not match!'); 
-        e.value=null;
-    }
-      
-}
-function confirmPassword(e){
-    if(document.getElementById('password').value !== document.getElementById('confirm').value) {
-        alert('Passwords do not match!'); 
-        e.value=null;
-    }
-      
-}

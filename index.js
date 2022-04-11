@@ -88,8 +88,6 @@ app.use((req,res,next)=>{
   next();
 });
 
-const {isLoggedIn, isOwner, hasOwnerRole, validateArenaData, validateFormData, validateUserFormData}=require('./middleware.js'); //importing middleware 
-
 const arenaRoutes=require('./routes/arenas'); 
 const bookingRoutes=require('./routes/bookings');
 const userRoutes=require('./routes/users'); 

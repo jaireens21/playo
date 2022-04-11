@@ -1,6 +1,7 @@
 const Joi=require('joi');
 const Arena=require('./models/arena');
 const myError=require('./utils/myError');
+const passwordComplexity = require('joi-password-complexity'); //package for password complexity check
 
 //middleware for authentication before accessing certain protected routes
 module.exports.isLoggedIn= (req,res,next)=>{
@@ -46,28 +47,27 @@ const arnSchema=Joi.object({
       description:Joi.string().required(),
       price:Joi.number().required().min(0).max(500),
       sports:Joi.array().required().single(),
-      startTiming:Joi.number().required().min(0.5).max(23.5),
-      endTiming:Joi.number().required().min(.5).max(23.5),
+      startTiming:Joi.number().required().min(0).max(23.5),
+      endTiming:Joi.number().required().min(0).max(23.5),
       duration:Joi.number().required().min(0.5).max(1),
       startDate:Joi.date().required(),
       endDate:Joi.date().required(),
     }).required()
   })
-module.exports.validateArenaData= (req,res,next)=>{
+module.exports.validateNewArenaData= (req,res,next)=>{
     const {error}=arnSchema.validate(req.body);
     if(error){
       const msg=error.details.map(e=>e.message).join(',');
       next(new myError(400, msg)); //call error handler with custom error
     }else{ 
       let {startDate,endDate,startTiming,endTiming}=req.body.arena;
-      // let today=new Date();
-      // today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
-      // let todayStr=today.toLocaleDateString("en-CA");
-      // if(startDate<todayStr){
-      //   next(new myError(400,'First Date of Booking cannot be earlier than today!'));
-      // }
-      // else 
-      if(endDate<startDate){
+      let today=new Date();
+      today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
+      let todayStr=today.toLocaleDateString("en-CA");
+      if(startDate<todayStr){
+        next(new myError(400,'First Date of Booking cannot be earlier than today!'));
+      }
+      else if(endDate<startDate){
         next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
       }
       else if(parseFloat(endTiming)<parseFloat(startTiming)){
@@ -76,7 +76,23 @@ module.exports.validateArenaData= (req,res,next)=>{
       else next();//no error--> go to next function 
     }
 }
-
+module.exports.validateEditArenaData= (req,res,next)=>{
+  const {error}=arnSchema.validate(req.body);
+  if(error){
+    const msg=error.details.map(e=>e.message).join(',');
+    next(new myError(400, msg)); //call error handler with custom error
+  }else{ 
+    let {startDate,endDate,startTiming,endTiming}=req.body.arena;
+    //no check on start Date here. Only if we edit start date, it should not be earlier than today.Unedited, it can continue as an earlier date. This 'onchange' lock needs comparison with arena's existing date and is implemented in the arenas route.
+    if(endDate<startDate){
+      next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
+    }
+    else if(parseFloat(endTiming)<parseFloat(startTiming)){
+      next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
+    }
+    else next();//no error--> go to next function 
+  }
+}
 
 
 //middleware for data validation(server-side) while booking an arena, using Joi schema
@@ -98,8 +114,6 @@ module.exports.validateBookingFormData= (req,res,next)=>{
 const userformSchema=Joi.object({
   username:Joi.string().required(),
   password: Joi.string().required(),
-  //password complexity being checked by passwordComplexity npm package in index.js
-  //email:Joi.string().email({ minDomainSegments: 2 }).required(),
   confirm:Joi.string().required(),
   email:Joi.string().email({ minDomainSegments: 2, tlds: { allow: true } }).required(),
   //email:Joi.string().required(),
@@ -113,4 +127,22 @@ module.exports.validateUserFormData= (req,res,next)=>{
       req.flash('error', msg);
       return res.redirect('/register');
     }else next(); 
+}
+
+//middleware for password complexity check using passwordComplexity npm package
+module.exports.validatePasswordComplexity=(req,res,next)=>{
+  const complexityOptions = {
+    min: 8,
+    max: 16,
+    lowerCase: 1,
+    upperCase: 1,
+    numeric: 1,
+    symbol: 1,
+    requirementCount: 4,
+  };
+  const {error}= passwordComplexity(complexityOptions).validate(req.body.password);
+  if (error){ 
+    req.flash('error','Password does not meet complexity criteria! Please try again!');
+    return res.redirect('/register');
+  }else next(); 
 }

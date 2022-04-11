@@ -1,7 +1,9 @@
+<!-- user forgot password. We sent a password reset link to their email id. Upon clicking on that link, user sees this form and enters the new password -->
+
 <%- layout('./layout/boilerplate.ejs') %>
 
 <form method="POST" action="/reset/<%=user.resetPasswordToken%>?_method=PUT" class="w-50 mx-auto needs-validation" novalidate>
-    <h1 class="text-center">Reset Password</h1>
+    <h1 class="text-center">Reset Forgotten Password</h1>
        
     <div class="mb-3">
         <label for="password">Enter New Password:</label>

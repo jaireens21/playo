@@ -1,7 +1,7 @@
 const express= require ('express');
 const router=express.Router({mergeParams: true});//make sure to add mergeParams:true to preserve the req.params values from the parent router
 const passport=require('passport');
-const passwordComplexity = require('joi-password-complexity'); //package for password complexity check
+
 const crypto=require('crypto');//for generating resetPasswordToken
 const nodemailer = require('nodemailer'); //for sending password reset email
 
@@ -11,37 +11,18 @@ const myError=require('../utils/myError.js');
 const User=require('../models/user.js');
 const Arena=require('../models/arena.js');
 
-const {validateUserFormData,isLoggedIn}=require('../middleware.js'); //importing middleware 
+const {validateUserFormData,isLoggedIn,validatePasswordComplexity}=require('../middleware.js'); //importing middleware 
 
 
-//new user registration form
+//serve a form for new user registration
 router.get('/register', (req,res)=>{
   return res.render('userRegister.ejs');
 })
 
 
 //create a new user
-router.post('/register', validateUserFormData, catchAsync(async(req,res,next)=>{
+router.post('/register', validateUserFormData, validatePasswordComplexity, catchAsync(async(req,res,next)=>{
   const {username,email,password,role}=req.body;
-      
-  //password complexity check
-  // const complexityOptions = {
-  //   min: 8,
-  //   max: 16,
-  //   lowerCase: 1,
-  //   upperCase: 1,
-  //   numeric: 1,
-  //   symbol: 1,
-  //   requirementCount: 4,
-  // };
-  // const {error}= passwordComplexity(complexityOptions).validate(password);
-  // if (error){ 
-  //   req.flash('error','Password does not meet complexity criteria! Please try again!');
-  //   return res.redirect('/register');
-  // }
-
-  //password complexity NOW being checked using js on userRegister page.
-  
   const foundUser= await User.findOne({email:email});
   if(foundUser){
     req.flash('error','Uh oh! Looks like you already have an account with us! Please sign in.');
@@ -60,7 +41,7 @@ router.post('/register', validateUserFormData, catchAsync(async(req,res,next)=>{
 }))
 
 
-//login form
+//serve a user login form
 router.get('/login', (req,res)=>{
   return res.render('userLogin.ejs');
 })
@@ -84,6 +65,25 @@ router.get('/logout',(req,res)=>{
 })
 
 
+//CHANGE PASSWORD routes
+
+//serve a form to get loggedin user's old password & new password
+router.get('/users/:id/changePwd', isLoggedIn, (req,res)=>{
+  return res.render('passwordChange.ejs'); 
+})
+
+//change user's password
+router.post('/users/:id/changePwd', isLoggedIn, validatePasswordComplexity, catchAsync(async(req,res)=>{
+  const {oldPassword,password}=req.body;
+  //Passport-local-mongoose defines req.user when a user is logged in
+  await req.user.changePassword(oldPassword, password); //a passportlocal method to change user's password
+  req.logout();
+  req.flash('success', 'Password has been changed. Please login with new password');
+  return res.redirect('/login');
+}))
+
+
+
 //FORGOT PASSWORD routes
 
 //render a form to get user's email id
@@ -91,11 +91,11 @@ router.get('/forgot', (req,res)=>{
   if (req.isAuthenticated()) { //user is already logged in
     return res.redirect('/');
   }
-  return res.render('passwordForgot.ejs'); 
+  return res.render('forgotPwdForm.ejs'); 
 })
 
 
-//send reset email to user's email id
+//generate a forgotten password reset link & send it as an email to the user's email id
 router.post('/forgot', catchAsync(async(req,res)=>{
   const user=await User.findOne({email:req.body.email});
   if(!user){
@@ -131,26 +131,26 @@ router.post('/forgot', catchAsync(async(req,res)=>{
       console.log(err);
       return res.redirect('/forgot');
     }else{
-      //res.send(`Email sent to ${user.email}. Follow instructions given in the email.`);
-      return res.render('passwordEmailSent.ejs', {email: req.body.email});
+      return res.render('forgotPwdEmail.ejs', {email: req.body.email});
     }
   })
 }))
 
 
-//render a form to get new password (when user clicks on reset link in email)
+//(user forgot password, got an email with a password reset link, user clicked on the link )
+//serve a form to get new password 
 router.get('/reset/:token', catchAsync(async(req,res)=>{
   let user= await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
   if(!user){
     req.flash('error', 'Password reset token is invalid or has expired.');
     return res.redirect('/forgot');
   }
-  return res.render('passwordReset.ejs', { user});
+  return res.render('forgotPwdReset.ejs', { user});
 }))
 
 
-//reset user's password
-router.put('/reset/:token', catchAsync(async(req,res)=>{
+//reset user's forgotten password
+router.put('/reset/:token',validatePasswordComplexity,catchAsync(async(req,res)=>{
   
   let user= await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
   if(!user){
@@ -159,7 +159,6 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
   }
   
   const {password}=req.body;
-  //password complexity check implemented using js on the reset page.
   await user.setPassword(password); //a passportlocal method to set user password
   user.resetPasswordToken = undefined;
   user.resetPasswordExpires = undefined;
@@ -167,7 +166,7 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
   //console.log('user updated!');
   
   
-  //send email to inform that password has been reset 
+  //send email to inform that forgotten password has been reset 
   const transporter = nodemailer.createTransport({
     service:'gmail',
     auth:{
@@ -192,29 +191,9 @@ router.put('/reset/:token', catchAsync(async(req,res)=>{
 }))
 
 
-//CHANGE PASSWORD routes
-
-//render a form to get user's email id
-router.get('/users/:id/changePwd', isLoggedIn, (req,res)=>{
-  return res.render('passwordChange.ejs'); 
-})
-
-//change user's password
-router.post('/users/:id/changePwd', isLoggedIn, catchAsync(async(req,res)=>{
-  const {oldPassword,newPassword}=req.body;
-  //password complexity check on new password implemented using js on the passwordChange page.
-  //user details avbl on req.user since user is logged in
-  await req.user.changePassword(oldPassword, newPassword); //a passportlocal method to change user's password
-  req.logout();
-  req.flash('success', 'Password has been changed. Please login with new password');
-  return res.redirect('/login');
-
-}))
-
-
-
-
 //PROFILE ROUTES
+
+//show user's bookings
 router.get('/users/:id/bookings',isLoggedIn, catchAsync(async(req,res)=>{
   const user=await User.findById(req.user._id).populate({
     path:'bookings',
@@ -225,22 +204,21 @@ router.get('/users/:id/bookings',isLoggedIn, catchAsync(async(req,res)=>{
   let hasBookings=false;
   if(user.bookings.length>0){
     hasBookings=true;
-    //sorting function (a,b)=>(a-b);
     //sort bookings by date, before display
     user.bookings.sort((a,b)=>{ return (a.date-b.date);});
     await user.save();
   }
   let today=new Date();
   return res.render('userBookings', {user, hasBookings,today});
-
 }) )
 
+//show user's profile details
 router.get('/users/:id/profile',isLoggedIn, catchAsync(async(req,res)=>{
   const user=await User.findById(req.user._id);
   return res.render('userProfile', {user});
-
 }) )
 
+//show arena's owned by the user, if any
 router.get('/users/:id/arenas',isLoggedIn, catchAsync(async(req,res)=>{
   const userArenas=await Arena.find({owner:req.user._id});
   if(userArenas.length>0){
@@ -248,7 +226,6 @@ router.get('/users/:id/arenas',isLoggedIn, catchAsync(async(req,res)=>{
   }else {
     throw new myError(400,"You do not own any Arenas!");
   }
-  
-}) )
+}))
 
 module.exports=router;

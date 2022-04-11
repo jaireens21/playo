@@ -1,6 +1,6 @@
 <%- layout('./layout/boilerplate.ejs') %>
 
-        <form method="POST" action="/arenas/<%=arena._id%>?_method=PUT" class="arenaForm needs-validation" novalidate enctype="multipart/form-data">
+        <form method="POST" action="/arenas/<%=arena._id%>?_method=PUT" class="arenaForm needs-validation" novalidate enctype="multipart/form-data" onsubmit="validateSports(event)">
             <h1 class="text-center">Edit Details of Arena</h1>
             <div class="mb-3">
                 <label for="name" class="form-label">Enter Name:</label>
@@ -77,7 +77,7 @@
                     </div>
                 <input class="form-control" type="number" name="arena[price]" id="price" value="<%=arena.price%>" required>
                 <div class="invalid-feedback">
-                    Required!
+                    Required! Max value: 500
                 </div>
                 </div>
             </div>
@@ -95,7 +95,7 @@
                 <label for="image" class="form-label">Add more images: </label>
                 <input class="form-control" type="file" name="image" id="image" onchange="validateFileSize(this), validateFileNumber(this)" multiple aria-describedby="imageHelp">
                 <div id="imageHelp" class="form-text">Max 3 images can be uploaded at a time. Images must be jpeg/ jpg/ png format. Max file size of each image: 2 MB</div>
-                <!--validateFileSize prevent uploading image of large size, see public/javascripts-->
+                <!--validateFileSize prevents uploading of large size images, see public/javascripts-->
             </div>
 
             <div class="mb-3">
@@ -138,12 +138,15 @@
             <div class="mb-3 d-flex justify-content-start flex-wrap">
                 <div class="me-5 mb-3">
                     <label for="startTiming" class="form-label">FIRST BOOKING of the day:</label>
-                    <select class="form-control" id="startTiming" name="arena[startTiming]" required>
+                    <select class="form-control" id="startTiming" name="arena[startTiming]" required onchange="checkStartTiming(this)">
                         <option value="">Choose an Option</option>
                         <% for (let i=0;i<24;i=i+0.5){ %>
                             <option value=<%=i%> <%= i===arena.startTiming? "selected":""%>> <%= i%1==0?i:i-0.5 %> : <%= i%1==0?'00':'30' %> hrs</option>
                         <% } %>
                     </select>
+                    <div class="invalid-feedback">
+                        Required!
+                    </div>
                 </div>
                 <div class="me-5 mb-3">
                     <label for="endTiming" class="form-label">LAST BOOKING of the day:</label>
@@ -153,6 +156,9 @@
                             <option value=<%=i%> <%= i===arena.endTiming? "selected":""%>> <%= i%1==0?i:i-0.5 %> : <%= i%1==0?'00':'30' %> hrs</option>
                         <% } %>
                     </select>
+                    <div class="invalid-feedback">
+                        Required!
+                    </div>
                     
                 </div>
                 <div >
@@ -162,6 +168,9 @@
                         <option value="0.5" <%= arena.duration==0.5? "selected":""%>>30 minutes</option>
                         <option value="1" <%= arena.duration==1? "selected":""%>>1 hour</option>
                     </select>
+                    <div class="invalid-feedback">
+                        Required!
+                    </div>
                 </div>
             </div>
 
