@@ -1,6 +1,6 @@
 
-function toggleArrowDisplay(e){
+function toggleArrowDisplay(ele){
     
     document.getElementById('pastBookings').classList.toggle('hidden');
-    e.innerHTML= (e.innerHTML==="▼" ? "▲" : "▼");
+    ele.innerHTML= (ele.innerHTML==="▼" ? "▲" : "▼");
 }

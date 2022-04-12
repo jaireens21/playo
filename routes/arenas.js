@@ -6,35 +6,20 @@ const createDateObj=require('../utils/createDateObj');
 const setMyTime=require('../utils/setMyTime');
 const findConflictingBookings=require('../utils/findConflictingBookings');
 
+const {cloudinary}= require('../cloudinary'); //folder:cloudinary,file:index.js
+
 const Arena=require('../models/arena');
 
-const {isLoggedIn, isOwner, hasOwnerRole, validateNewArenaData,validateEditArenaData}=require('../middleware.js'); //importing middleware 
+const {isLoggedIn, isOwner, hasOwnerRole, validateNewArenaData,validateEditArenaData,uploadingImages}=require('../middleware.js'); //importing middleware 
 
 
-//image uploading to cloudinary
-const multer = require('multer'); //for image uploading
-const {cloudinary,storage}= require('../cloudinary'); //folder:cloudinary,file:index.js
-const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
-const whitelist = ['image/png', 'image/jpeg', 'image/jpg']; //allowed formats of images
-const upload = multer({  
-  storage,  //upload to cloudinary
-  limits: {fileSize: maxSize, files:3},//limit to 3 image uploads at once
-  fileFilter: (req, file, cb) => { //checking if file extension is an allowed format
-      if (!whitelist.includes(file.mimetype)){
-        cb(null, false);
-        return cb(new Error('Only .png, .jpg and .jpeg formats allowed!'));
-      }
-      else{
-        cb(null, true);
-      } 
-  }
-}); 
+
 
 
 //list page showing all arenas
 router.get('/', catchAsync(async(req,res)=>{
     // searching for an arena (name or location or sports)
-    let sstring=""; let hasNoMatch = true; let result=[];
+    let sstring=""; let hasMatch = false; let result=[];
     Arena.find({}, function(err, allArenas) {
       if (err) {
         console.log(err);
@@ -43,14 +28,14 @@ router.get('/', catchAsync(async(req,res)=>{
       } else {
         if (req.query.search){
           sstring=req.query.search;
-          let regex=new RegExp(req.query.search, 'gi');
+          let regex=new RegExp(sstring, 'gi');
           result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)||place.sports.join('').match(regex)));
           if (result.length >= 1) {
-            hasNoMatch = false;
+            hasMatch = true;
           }
-          return res.render('list.ejs', {allArenas: result, hasNoMatch,sstring});
+          return res.render('list.ejs', {allArenas: result, hasMatch,sstring});
         }else {
-          return res.render('list.ejs', {allArenas,hasNoMatch,sstring});
+          return res.render('list.ejs', {allArenas,hasMatch,sstring});
         }
       }})}))
   
@@ -62,7 +47,7 @@ router.get('/new', isLoggedIn, hasOwnerRole, (req,res)=>{
 
 
 //save a new arena to DB
-router.post('/', isLoggedIn, hasOwnerRole, upload.array('image'), validateNewArenaData, catchAsync(async(req,res)=>{
+router.post('/', isLoggedIn, hasOwnerRole, uploadingImages, validateNewArenaData, catchAsync(async(req,res)=>{
     const {name,location,description,price,sports,startTiming,endTiming,duration}=req.body.arena;
     const newArena=new Arena({name,location,description,price,sports,startTiming,endTiming,duration});
     newArena.owner=req.user._id;
@@ -121,7 +106,7 @@ router.route('/:id')
     }))
 
         //save edited arena's details
-    .put(isLoggedIn, isOwner, upload.array('image'), validateEditArenaData, catchAsync(async(req,res)=>{
+    .put(isLoggedIn, isOwner, uploadingImages, validateEditArenaData, catchAsync(async(req,res)=>{
         const {name,location,description,price,sports,startTiming,endTiming,duration}=req.body.arena;
         let {startDate,endDate}=req.body.arena;
         startDate=createDateObj(startDate);

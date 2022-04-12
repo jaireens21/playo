@@ -1,3 +1,5 @@
+//all middleware used in routes
+
 const Joi=require('joi');
 const Arena=require('./models/arena');
 const myError=require('./utils/myError');
@@ -145,4 +147,38 @@ module.exports.validatePasswordComplexity=(req,res,next)=>{
     req.flash('error','Password does not meet complexity criteria! Please try again!');
     return res.redirect('/register');
   }else next(); 
+}
+
+
+//image uploading to cloudinary
+const multer = require('multer'); //for image uploading
+const {cloudinary,storage}= require('./cloudinary'); //folder:cloudinary,file:index.js
+
+const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
+const whitelist = ['image/png', 'image/jpeg', 'image/jpg']; //allowed formats of images
+
+const upload = multer({  
+  storage,  //upload to cloudinary
+  limits: {fileSize: maxSize, files:3},//limit to 3 image uploads at once
+  fileFilter: (req, file, cb) => { //checking if file extension is an allowed format
+      if (!whitelist.includes(file.mimetype)){
+        cb(null, false);
+        return cb(new Error('Only .png, .jpg and .jpeg formats allowed!'));
+      }
+      else{
+        cb(null, true);
+      } 
+  }
+}).array('image'); 
+
+module.exports.uploadingImages=(req,res,next)=>{
+  upload(req,res,function(err){
+    if(err instanceof multer.MulterError){
+      const msg="A Multer error occurred when uploading.";
+      next(myError(400,msg));
+    }else if(err){
+      const msg="An unknown error occurred when uploading.";
+      next(myError(400,msg));
+    }else next();
+  })
 }

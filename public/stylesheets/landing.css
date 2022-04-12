@@ -77,9 +77,3 @@ animation-delay: 40s;
         opacity: 0.1;
     }
 }
-  
-/* Older browser support - .no-cssanimations class added by modernizr */
-/* .no-cssanimations .slideshow li {
-opacity: 1;
-}
-   */

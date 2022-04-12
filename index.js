@@ -112,8 +112,6 @@ app.use((err,req,res,next)=>{
   //extracting data from error & giving defaults
   const{statusCode=500}=err;
   if(!err.message){err.message='Oh No! Something went wrong';}
-  if (err.code === 'LIMIT_FILE_SIZE')  //instanceof multer.MulterError
-    {err.message = 'File Size is too large. Allowed file size is 2MB';}
   res.status(statusCode).render('error.ejs', {err});
 })
 
