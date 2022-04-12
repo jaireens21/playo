@@ -32,7 +32,8 @@ router.post('/register', validateUserFormData, validatePasswordComplexity, catch
     const newUser= await User.register(user,password);
     req.login(newUser, err=>{ 
       if (err) {
-        return next(err);}
+        return next(err);
+      }
     })
     req.flash('success','Registration successful!');
     return res.redirect('/arenas');
@@ -76,10 +77,24 @@ router.get('/users/:id/changePwd', isLoggedIn, (req,res)=>{
 router.post('/users/:id/changePwd', isLoggedIn, validatePasswordComplexity, catchAsync(async(req,res)=>{
   const {oldPassword,password}=req.body;
   //Passport-local-mongoose defines req.user when a user is logged in
-  await req.user.changePassword(oldPassword, password); //a passportlocal method to change user's password
-  req.logout();
-  req.flash('success', 'Password has been changed. Please login with new password');
-  return res.redirect('/login');
+  
+  //await req.user.changePassword(oldPassword, password); 
+  req.user.changePassword(oldPassword, password, function(err) { //a passportlocal method to change user's password
+    if(err) {
+      if(err.name === 'IncorrectPasswordError'){
+        req.flash('error','The password you entered is incorrect! Please try again.');
+        return res.redirect(`/users/${req.user._id}/changePwd`);
+      }else{
+        req.flash('error','Something went wrong!! Please try again after sometime.');
+        return res.redirect(`/users/${req.user._id}/changePwd`);
+      }
+    }else{
+      req.logout();
+      req.flash('success','Your password has been changed successfully. Please login with new password.');
+      return res.redirect('/login');
+    }
+  });
+  
 }))
 
 
@@ -159,13 +174,19 @@ router.put('/reset/:token',validatePasswordComplexity,catchAsync(async(req,res)=
   }
   
   const {password}=req.body;
-  await user.setPassword(password); //a passportlocal method to set user password
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpires = undefined;
-  await user.save();
-  //console.log('user updated!');
-  
-  
+  //await user.setPassword(password); 
+  user.setPassword(password, function(err,user){//a passportlocal method to set user password
+    if(err){
+      req.flash('error', 'Password could not be saved.Please try again!');
+      return res.redirect('/forgot');
+    }else{
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save();
+      //console.log('user updated!');
+    }
+  });
+    
   //send email to inform that forgotten password has been reset 
   const transporter = nodemailer.createTransport({
     service:'gmail',
@@ -186,7 +207,7 @@ router.put('/reset/:token',validatePasswordComplexity,catchAsync(async(req,res)=
       console.log(err);
     }
   })
-  req.flash('success', 'Password has been reset.');
+  req.flash('success', 'Your new password has been saved successfully!');
   return res.redirect('/login');
 }))
 
