@@ -1,4 +1,4 @@
-function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,endDate){
+function findConflictingBookings(arena,missingSports,startTiming,endTiming,startDate,endDate){
     
     function setMyTime(obj){
         obj.setUTCHours(10); 
@@ -107,16 +107,6 @@ function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,en
         console.log("added conflictingBookings due to end time",conflictingBookings);
         
         //if a sport has been removed, common dates may have bookings that get affected
-
-        //checking if any sport has been removed
-        let missingSports=[];
-        for(let i=0;i<arena.sports.length;++i){
-        if (sports.indexOf(arena.sports[i])===-1){
-            missingSports.push(arena.sports[i]);
-        }
-        }
-        console.log('missingSports',missingSports);
-
         //look for bookings for missing sports on common dates
         if(missingSports.length>0){
             arena.bookings.filter(booking=>(missingSports.indexOf(booking.sport)!==-1)).forEach(booking=>{

@@ -119,15 +119,28 @@ router.route('/:id')
           return res.redirect('/arenas');
         }
         
-        //First Date of Booking cannot be changed to a date earlier than today
+        //First Date of Booking cannot be CHANGED to a date earlier than today
         let today=new Date(); today=setMyTime(today); 
-        if(startDate.toLocaleDateString!==arena.startDate.toLocaleDateString && startDate.toLocaleDateString<today.toLocaleDateString){
+        if(startDate.toLocaleDateString()!==arena.startDate.toLocaleDateString() && startDate.toLocaleDateString()<today.toLocaleDateString()){
           req.flash('error','First Date of Booking cannot be changed to a date earlier than today!');
           return res.redirect(`/arenas/${arena._id}/edit`);
         }
-
-        let conflictingBookings=findConflictingBookings(arena,sports,startTiming,endTiming,startDate,endDate);
         
+        //checking if any sport has been removed
+        let missingSports=[];
+        for(let i=0;i<arena.sports.length;++i){
+        if (sports.indexOf(arena.sports[i])===-1){
+            missingSports.push(arena.sports[i]);
+          }
+        }
+        // console.log('missingSports',missingSports);
+
+        let conflictingBookings=[];
+        //only if the dates/timings/sports have been edited, we need to look for conflicted bookings
+        if(arena.startDate.toLocaleDateString()!==startDate.toLocaleDateString() || arena.endDate.toLocaleDateString()!==endDate.toLocaleDateString() || arena.startTiming!==parseFloat(startTiming) || arena.endTiming!==parseFloat(endTiming) || missingSports.length>0){
+          conflictingBookings=findConflictingBookings(arena,missingSports,startTiming,endTiming,startDate,endDate);
+        }
+        //update the arena with input from owner
         arena.sports=sports;
         arena.startDate=startDate;
         arena.endDate=endDate;
@@ -139,30 +152,42 @@ router.route('/:id')
           const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
           arena.images.push(...imgs);
         } 
-        await arena.save();
-
+        
         //removing selected images from the arena; filenames are avbl on req.body.deleteImages[]
         if(req.body.deleteImages){
-          //destroy image on cloudinary
+          // console.log("delete images array",req.body.deleteImages);
+          
+          let removeIndices=[];
           for(let filename of req.body.deleteImages){
-            await cloudinary.uploader.destroy(filename);}
-          //remove image from arena, directly in db
-          await arena.updateOne( {$pull: {images: {filename: {$in: req.body.deleteImages}}}}); 
-        }
-        
-        arena=await Arena.findById(req.params.id);
-        //if all existing images were deleted, we add a default image 
-        if(arena.images.length===0){
-          arena.images.push({
-            url:"https://res.cloudinary.com/dvhs0ay92/image/upload/v1649104849/bookmysport/Default_Image_qlhcxb.jpg",
-            filename:"bookmysport/Default_Image_qlhcxb"
+            //destroy image on cloudinary
+            await cloudinary.uploader.destroy(filename);
+
+            //find the index of images-to-be-deleted in arena.images array
+            removeIndices.push(arena.images.findIndex(img=>img.filename===filename));
+          }
+          // console.log("removeIndices",removeIndices);
+
+          let count=0;
+          removeIndices.forEach(ind=>{
+            //splice the array arena.image
+            //with every splice, the next splice index should decrease by 1
+            arena.images.splice((ind-count),1);
+            ++count;
           });
-          await arena.save();
+          
+          //if all images have been deleted, add a default image
+          if(arena.images.length===0){
+            arena.images.push({
+              url:"https://res.cloudinary.com/dvhs0ay92/image/upload/v1649104849/bookmysport/Default_Image_qlhcxb.jpg",
+              filename:"bookmysport/Default_Image_qlhcxb"
+            });
+          }
         }
-        
+        await arena.save();
         req.flash('success', 'Successfully updated!');
+
         //if the proposed edit is affecting existing bookings: 
-        //Prompt the owner to reveiw these bookings
+        //prompt the owner to reveiw these bookings
         if(conflictingBookings.length>0){
           return res.render('bookingsConflicted.ejs', {cBookings:conflictingBookings, arena});
         }
