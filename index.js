@@ -12,7 +12,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 const mongoose=require('mongoose');
-const dbUrl='mongodb://localhost:27017/playo';
+//const dbUrl='mongodb://localhost:27017/playo'; //connecting to local mongo DB
+const dbUrl=process.env.DB_URL; //connecting to atlas (cloud mongo db)
 mongoose.connect(dbUrl,{
     useNewUrlParser: true, 
     useUnifiedTopology: true 
