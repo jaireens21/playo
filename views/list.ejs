@@ -1,5 +1,3 @@
-<!-- list of all the arenas registered with the website -->
-
 <%- layout('./layout/boilerplate.ejs') %>
 
 <div class="jumbotron text-light text-center d-flex flex-column justify-content-center rounded-0 p-0">
@@ -30,7 +28,7 @@
         <h2>Search term: '<%=sstring%>'</h1>
     <% }%>
 
-    <%if(sstring && !hasMatch){%>
+    <%if(sstring && hasNoMatch){%>
         <h1>No matches found!</h1>
     <% }%>
 

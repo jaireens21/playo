@@ -11,7 +11,7 @@ module.exports.isLoggedIn= (req,res,next)=>{
       req.flash('error', 'You must be logged in first!');
       return res.redirect('/login');
     }
-    return next();
+    next();
 }
   
 
@@ -24,7 +24,7 @@ module.exports.isOwner= async(req,res,next)=>{
       req.flash('error', 'You do not have permission to do that!');
       return res.redirect(`/arenas/${id}`);
     }
-    return next();
+    next();
 }
 
 //middleware to check if loggedin user has the role of owner 
@@ -34,12 +34,13 @@ module.exports.hasOwnerRole= async(req,res,next)=>{
     req.flash('error', 'You do not have permission to do that!');
     return res.redirect('/arenas');
   }
-  return next();
+  next();
 }
 
 
 //middleware for data validation(server-side) while making a new arena/editing arena, using Joi schema
 const arnSchema=Joi.object({
+  deleteImages:Joi.array().single(), //added bcoz validation was not letting it go
     arena:Joi.object({
       name:Joi.string().required(),
       location:Joi.string().required(),
@@ -54,43 +55,42 @@ const arnSchema=Joi.object({
     }).required()
   })
 module.exports.validateNewArenaData= (req,res,next)=>{
-    const {error}=arnSchema.validate(req.body.arena);
+    const {error}=arnSchema.validate(req.body);
     if(error){
       const msg=error.details.map(e=>e.message).join(',');
-      return next(new myError(400, msg)); //call error handler with custom error
+      next(new myError(400, msg)); //call error handler with custom error
     }else{ 
       let {startDate,endDate,startTiming,endTiming}=req.body.arena;
       let today=new Date();
       today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
       let todayStr=today.toLocaleDateString("en-CA");
       if(startDate<todayStr){
-        return next(new myError(400,'First Date of Booking cannot be earlier than today!'));
+        next(new myError(400,'First Date of Booking cannot be earlier than today!'));
       }
       else if(endDate<startDate){
-        return next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
+        next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
       }
       else if(parseFloat(endTiming)<parseFloat(startTiming)){
-        return next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
+        next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
       }
-      else return next();//no error--> go to next function 
+      else next();//no error--> go to next function 
     }
 }
 module.exports.validateEditArenaData= (req,res,next)=>{
-  console.log('inside validator of edited arena');
-  const {error}=arnSchema.validate(req.body.arena);
+  const {error}=arnSchema.validate(req.body);
   if(error){
     const msg=error.details.map(e=>e.message).join(',');
-    return next(new myError(400, msg)); //call error handler with custom error
+    next(new myError(400, msg)); //call error handler with custom error
   }else{ 
     let {startDate,endDate,startTiming,endTiming}=req.body.arena;
     //no check on start Date here. Only if we edit start date, it should not be earlier than today.Unedited, it can continue as an earlier date. This 'onchange' lock needs comparison with arena's existing date and is implemented in the arenas route.
     if(endDate<startDate){
-      return next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
+      next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
     }
     else if(parseFloat(endTiming)<parseFloat(startTiming)){
-      return next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
+      next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
     }
-    else return next();//no error--> go to next function 
+    else next();//no error--> go to next function 
   }
 }
 
@@ -104,8 +104,8 @@ module.exports.validateBookingFormData= (req,res,next)=>{
     const {error}=formSchema.validate(req.body);
     if(error){
       const msg=error.details.map(e=>e.message).join(',');
-      return next(new myError(400, msg)); //call error handler with custom error
-    }else return next();//no error--> go to next function 
+      next(new myError(400, msg)); //call error handler with custom error
+    }else next();//no error--> go to next function 
 }
 
 
@@ -126,7 +126,7 @@ module.exports.validateUserFormData= (req,res,next)=>{
       //next(new myError(400, msg)); //call error handler with custom error
       req.flash('error', msg);
       return res.redirect('/register');
-    }else return next(); 
+    }else next(); 
 }
 
 //middleware for password complexity check using passwordComplexity npm package
@@ -144,41 +144,5 @@ module.exports.validatePasswordComplexity=(req,res,next)=>{
   if (error){ 
     req.flash('error','Password does not meet complexity criteria! Please try again!');
     return res.redirect('/register');
-  }else return next(); 
-}
-
-//middleware to upload images to cloudinary
-//image uploading to cloudinary
-const multer = require('multer'); //for uploading images
-const {cloudinary,storage}= require('./cloudinary'); //folder:cloudinary,file:index.js
-
-const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
-const whitelist = ['image/png', 'image/jpeg', 'image/jpg']; //allowed formats of images
-
-const upload = multer({  
-  storage,  //upload to cloudinary
-  limits: {fileSize: maxSize, files:3},//limit to 3 image uploads at once
-  fileFilter: (req, file, cb) => { //checking if file extension is an allowed format
-      if (!whitelist.includes(file.mimetype)){
-        cb(null, false);
-        return cb(new Error('Only .png, .jpg and .jpeg formats allowed!'));
-      }
-      else{
-        cb(null, true);
-      } 
-  }
-}).array('image'); 
-
-module.exports.uploadingImages=(req,res,next)=>{
-  upload(req,res, function(err){
-    if (err instanceof multer.MulterError) {
-      // A Multer error occurred when uploading.
-      const msg="A Multer error occurred while uploading the images!"
-      return next(new myError(400, msg));
-    } else if (err) {
-      // An unknown error occurred when uploading.
-      const msg="An unknown error occurred while uploading the images!"
-      return next(new myError(400, msg));
-    }else return next();    // Everything went fine.
-  });
+  }else next(); 
 }

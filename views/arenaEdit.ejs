@@ -1,5 +1,3 @@
-<!-- form to edit an arenas' details -->
-
 <%- layout('./layout/boilerplate.ejs') %>
 
         <form method="POST" action="/arenas/<%=arena._id%>?_method=PUT" class="arenaForm needs-validation" novalidate enctype="multipart/form-data" onsubmit="validateSports(event)">

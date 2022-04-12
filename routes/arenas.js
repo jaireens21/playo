@@ -8,30 +8,49 @@ const findConflictingBookings=require('../utils/findConflictingBookings');
 
 const Arena=require('../models/arena');
 
-const {isLoggedIn, isOwner, hasOwnerRole, validateNewArenaData,validateEditArenaData,uploadingImages}=require('../middleware.js'); //importing middleware 
+const {isLoggedIn, isOwner, hasOwnerRole, validateNewArenaData,validateEditArenaData}=require('../middleware.js'); //importing middleware 
 
+
+//image uploading to cloudinary
+const multer = require('multer'); //for image uploading
+const {cloudinary,storage}= require('../cloudinary'); //folder:cloudinary,file:index.js
+const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
+const whitelist = ['image/png', 'image/jpeg', 'image/jpg']; //allowed formats of images
+const upload = multer({  
+  storage,  //upload to cloudinary
+  limits: {fileSize: maxSize, files:3},//limit to 3 image uploads at once
+  fileFilter: (req, file, cb) => { //checking if file extension is an allowed format
+      if (!whitelist.includes(file.mimetype)){
+        cb(null, false);
+        return cb(new Error('Only .png, .jpg and .jpeg formats allowed!'));
+      }
+      else{
+        cb(null, true);
+      } 
+  }
+}); 
 
 
 //list page showing all arenas
 router.get('/', catchAsync(async(req,res)=>{
     // searching for an arena (name or location or sports)
-    let sstring=""; let hasMatch = false; let result=[];
+    let sstring=""; let hasNoMatch = true; let result=[];
     Arena.find({}, function(err, allArenas) {
       if (err) {
         console.log(err);
-        req.flash('error', 'Something went wrong! Please try again later.');
+        req.flash('error', err.message);
         return res.redirect('/');
       } else {
         if (req.query.search){
           sstring=req.query.search;
-          let regex=new RegExp(sstring, 'gi');
+          let regex=new RegExp(req.query.search, 'gi');
           result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)||place.sports.join('').match(regex)));
           if (result.length >= 1) {
-            hasMatch = true;
+            hasNoMatch = false;
           }
-          return res.render('list.ejs', {allArenas: result, hasMatch,sstring});
+          return res.render('list.ejs', {allArenas: result, hasNoMatch,sstring});
         }else {
-          return res.render('list.ejs', {allArenas,hasMatch,sstring});
+          return res.render('list.ejs', {allArenas,hasNoMatch,sstring});
         }
       }})}))
   
@@ -43,8 +62,9 @@ router.get('/new', isLoggedIn, hasOwnerRole, (req,res)=>{
 
 
 //save a new arena to DB
-router.post('/', isLoggedIn, hasOwnerRole, uploadingImages,validateNewArenaData, catchAsync(async(req,res)=>{
-    const newArena=new Arena(req.body.arena);
+router.post('/', isLoggedIn, hasOwnerRole, upload.array('image'), validateNewArenaData, catchAsync(async(req,res)=>{
+    const {name,location,description,price,sports,startTiming,endTiming,duration}=req.body.arena;
+    const newArena=new Arena({name,location,description,price,sports,startTiming,endTiming,duration});
     newArena.owner=req.user._id;
     newArena.images= req.files.map( f=>( {url:f.path, filename:f.filename}) ); 
     //details of uploaded images(available on req.files thanks to multer) being added to the arena
@@ -63,14 +83,14 @@ router.post('/', isLoggedIn, hasOwnerRole, uploadingImages,validateNewArenaData,
 
 //serve edit form for an arena
 router.get('/:id/edit',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
-    const arena=await Arena.findById(req.params.id);
-    if(!arena){
+    const foundArena=await Arena.findById(req.params.id);
+    if(!foundArena){
       req.flash('error', 'Cannot find that arena!');
       return res.redirect('/arenas');
     }
-    const startDateString=arena.startDate.toLocaleDateString('en-CA');
-    const endDateString=arena.endDate.toLocaleDateString('en-CA');
-    return res.render('arenaEdit.ejs', {arena, startDateString, endDateString});
+    let startDateString=foundArena.startDate.toLocaleDateString('en-CA');
+    let endDateString=foundArena.endDate.toLocaleDateString('en-CA');
+    return res.render('arenaEdit.ejs', {arena:foundArena, startDateString, endDateString});
 }))
 
 //show arena's bookings
@@ -81,113 +101,102 @@ router.get('/:id/bookings',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
     return res.redirect('/arenas');
   }
 
-  const today=new Date(); const todayStr=today.toLocaleDateString("en-CA");
+  let today=new Date(); let todayStr=today.toLocaleDateString("en-CA");
 
-  //upcoming bookings : beyond today
-  const upcomingBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")>todayStr).sort((a,b)=>(a.date-b.date));
-
-  //past bookings: on/before today
-  const pastBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")<=todayStr).sort((a,b)=>(a.date-b.date));
+  let upcomingBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")>todayStr).sort((a,b)=>(a.date-b.date));
+  let pastBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")<=todayStr).sort((a,b)=>(a.date-b.date));
   
   return res.render('arenaBookings.ejs', {arena,userId:req.user._id,upcomingBookings,pastBookings});
 }))
 
-
-
 router.route('/:id')
+        //show details of an arena
+    .get(catchAsync(async(req,res)=>{
+        const arena=await Arena.findById(req.params.id).populate('owner');
+        if(!arena){
+          req.flash('error', 'Cannot find that arena!');
+          return res.redirect('/arenas');
+        }
+        return res.render('arenaShow.ejs', {arena});
+    }))
 
-  //show details of an arena
-  .get(catchAsync(async(req,res)=>{
-      const arena=await Arena.findById(req.params.id).populate('owner');
-      if(!arena){
-        req.flash('error', 'Cannot find that arena!');
+        //save edited arena's details
+    .put(isLoggedIn, isOwner, upload.array('image'), validateEditArenaData, catchAsync(async(req,res)=>{
+        const {name,location,description,price,sports,startTiming,endTiming,duration}=req.body.arena;
+        let {startDate,endDate}=req.body.arena;
+        startDate=createDateObj(startDate);
+        endDate=createDateObj(endDate);
+
+        let arena= await Arena.findByIdAndUpdate(req.params.id, {name,location,description,price});
+        
+        if (!arena){
+          req.flash('error', 'Cannot find that arena!');
+          return res.redirect('/arenas');
+        }
+        
+        //First Date of Booking cannot be changed to a date earlier than today
+        let today=new Date(); today=setMyTime(today); 
+        if(startDate.toLocaleDateString!==arena.startDate.toLocaleDateString && startDate.toLocaleDateString<today.toLocaleDateString){
+          req.flash('error','First Date of Booking cannot be changed to a date earlier than today!');
+          return res.redirect(`/arenas/${arena._id}/edit`);
+        }
+
+        let conflictingBookings=findConflictingBookings(arena,sports,startTiming,endTiming,startDate,endDate);
+        
+        arena.sports=sports;
+        arena.startDate=startDate;
+        arena.endDate=endDate;
+        arena.startTiming=startTiming;
+        arena.endTiming=endTiming;
+        arena.duration=duration;
+
+        if (req.files.length > 0) {
+          const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
+          arena.images.push(...imgs);
+        } 
+        await arena.save();
+
+        //removing selected images from the arena; filenames are avbl on req.body.deleteImages[]
+        if(req.body.deleteImages){
+          //destroy image on cloudinary
+          for(let filename of req.body.deleteImages){
+            await cloudinary.uploader.destroy(filename);}
+          //remove image from arena, directly in db
+          await arena.updateOne( {$pull: {images: {filename: {$in: req.body.deleteImages}}}}); 
+        }
+        
+        arena=await Arena.findById(req.params.id);
+        //if all existing images were deleted, we add a default image 
+        if(arena.images.length===0){
+          arena.images.push({
+            url:"https://res.cloudinary.com/dvhs0ay92/image/upload/v1649104849/bookmysport/Default_Image_qlhcxb.jpg",
+            filename:"bookmysport/Default_Image_qlhcxb"
+          });
+          await arena.save();
+        }
+        
+        req.flash('success', 'Successfully updated!');
+        //if the proposed edit is affecting existing bookings: 
+        //Prompt the owner to reveiw these bookings
+        if(conflictingBookings.length>0){
+          return res.render('bookingsConflicted.ejs', {cBookings:conflictingBookings, arena});
+        }
+        return res.redirect(`/arenas/${arena._id}`);
+    }))
+
+        //delete an arena
+    .delete(isLoggedIn, isOwner, catchAsync(async(req,res)=>{
+        const deletedArena=await Arena.findByIdAndDelete(req.params.id);
+        if (!deletedArena){
+          req.flash('error', 'Cannot find that arena!');
+          return res.redirect('/arenas');
+        }
+        for (let image of deletedArena.images) {
+          await cloudinary.uploader.destroy(image.filename);
+        } 
+        req.flash('success', 'Arena deleted!');
         return res.redirect('/arenas');
-      }
-      return res.render('arenaShow.ejs', {arena});
-  }))
-
-    //save edited arena's details
-  .put(isLoggedIn, isOwner, uploadingImages, validateEditArenaData, catchAsync(async(req,res)=>{
-    const {name,location,description,price,sports,startTiming,endTiming,duration}=req.body.arena;
-    let {startDate,endDate}=req.body.arena;
-    startDate=createDateObj(startDate);
-    endDate=createDateObj(endDate);
-
-    let arena= await Arena.findByIdAndUpdate(req.params.id, {name,location,description,price});
-    
-    if (!arena){
-      req.flash('error', 'Cannot find that arena!');
-      return res.redirect('/arenas');
-    }
-    
-    let today=new Date(); today=setMyTime(today); 
-
-    //First Date of Booking cannot be changed to a date earlier than today
-    if(startDate.toLocaleDateString!==arena.startDate.toLocaleDateString && startDate.toLocaleDateString<today.toLocaleDateString){
-      req.flash('error','First Date of Booking cannot be changed to a date earlier than today!');
-      return res.redirect(`/arenas/${arena._id}/edit`);
-    }
-
-    //see if any change in dates/timings/sports is affecting an existing booking
-    let conflictingBookings=findConflictingBookings(arena,sports,startTiming,endTiming,startDate,endDate);
-    
-    arena.sports=sports;
-    arena.startDate=startDate;
-    arena.endDate=endDate;
-    arena.startTiming=startTiming;
-    arena.endTiming=endTiming;
-    arena.duration=duration;
-
-    if (req.files.length > 0) {
-      const imgs= req.files.map( f=>({url:f.path, filename:f.filename})); 
-      arena.images.push(...imgs);
-    } 
-    await arena.save();
-
-    //removing selected images from the arena; filenames are avbl on req.body.deleteImages[]
-    if(req.body.deleteImages){
-      //destroy image on cloudinary
-      for(let filename of req.body.deleteImages){
-        cloudinary.uploader.destroy(filename, function(err,result) { if(err){console.log(err);}});
-      }
-      //remove image from arena, directly in db
-      await arena.updateOne( {$pull: {images: {filename: {$in: req.body.deleteImages}}}}); 
-    }
-    
-    arena=await Arena.findById(req.params.id);
-
-    //if all existing images were deleted, we add a default image 
-    if(arena.images.length===0){
-      arena.images.push({
-        url:"https://res.cloudinary.com/dvhs0ay92/image/upload/v1649104849/bookmysport/Default_Image_qlhcxb.jpg",
-        filename:"bookmysport/Default_Image_qlhcxb"
-      });
-      await arena.save();
-    }
-    
-    req.flash('success', 'Successfully updated!');
-    
-    //if the proposed edit is affecting existing bookings, prompt the owner to reveiw these bookings
-    if(conflictingBookings.length>0){
-      return res.render('bookingsConflicted.ejs', {cBookings:conflictingBookings, arena});
-    }
-    return res.redirect(`/arenas/${arena._id}`);
-  }))
-
-
-  //delete an arena
-  .delete(isLoggedIn, isOwner, catchAsync(async(req,res)=>{
-    const deletedArena=await Arena.findByIdAndDelete(req.params.id);
-    if (!deletedArena){
-      req.flash('error', 'Cannot find that arena!');
-      return res.redirect('/arenas');
-    }
-    for (let image of deletedArena.images) {
-      await cloudinary.uploader.destroy(image.filename);
-    } 
-    req.flash('success', 'Arena deleted!');
-    return res.redirect('/arenas');
-}))
+    }))
 
 
 module.exports=router;
