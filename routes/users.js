@@ -175,7 +175,7 @@ router.put('/reset/:token',validatePasswordComplexity,catchAsync(async(req,res)=
   
   const {password}=req.body;
   //await user.setPassword(password); 
-  user.setPassword(password, function(err,user){//a passportlocal method to set user password
+  user.setPassword(password, async function(err,user){//a passportlocal method to set user password
     if(err){
       req.flash('error', 'Password could not be saved.Please try again!');
       return res.redirect('/forgot');

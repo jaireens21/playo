@@ -40,7 +40,6 @@ module.exports.hasOwnerRole= async(req,res,next)=>{
 
 //middleware for data validation(server-side) while making a new arena/editing arena, using Joi schema
 const arnSchema=Joi.object({
-  deleteImages:Joi.array().single(), //added bcoz validation was not letting it go
     arena:Joi.object({
       name:Joi.string().required(),
       location:Joi.string().required(),
@@ -55,7 +54,7 @@ const arnSchema=Joi.object({
     }).required()
   })
 module.exports.validateNewArenaData= (req,res,next)=>{
-    const {error}=arnSchema.validate(req.body);
+    const {error}=arnSchema.validate(req.body.arena);
     if(error){
       const msg=error.details.map(e=>e.message).join(',');
       return next(new myError(400, msg)); //call error handler with custom error
@@ -77,7 +76,8 @@ module.exports.validateNewArenaData= (req,res,next)=>{
     }
 }
 module.exports.validateEditArenaData= (req,res,next)=>{
-  const {error}=arnSchema.validate(req.body);
+  console.log('inside validator of edited arena');
+  const {error}=arnSchema.validate(req.body.arena);
   if(error){
     const msg=error.details.map(e=>e.message).join(',');
     return next(new myError(400, msg)); //call error handler with custom error
@@ -145,4 +145,40 @@ module.exports.validatePasswordComplexity=(req,res,next)=>{
     req.flash('error','Password does not meet complexity criteria! Please try again!');
     return res.redirect('/register');
   }else return next(); 
+}
+
+//middleware to upload images to cloudinary
+//image uploading to cloudinary
+const multer = require('multer'); //for uploading images
+const {cloudinary,storage}= require('./cloudinary'); //folder:cloudinary,file:index.js
+
+const maxSize= 2*1024*1024; //in bytes; max Image file size set to 2MB
+const whitelist = ['image/png', 'image/jpeg', 'image/jpg']; //allowed formats of images
+
+const upload = multer({  
+  storage,  //upload to cloudinary
+  limits: {fileSize: maxSize, files:3},//limit to 3 image uploads at once
+  fileFilter: (req, file, cb) => { //checking if file extension is an allowed format
+      if (!whitelist.includes(file.mimetype)){
+        cb(null, false);
+        return cb(new Error('Only .png, .jpg and .jpeg formats allowed!'));
+      }
+      else{
+        cb(null, true);
+      } 
+  }
+}).array('image'); 
+
+module.exports.uploadingImages=(req,res,next)=>{
+  upload(req,res, function(err){
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      const msg="A Multer error occurred while uploading the images!"
+      return next(new myError(400, msg));
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      const msg="An unknown error occurred while uploading the images!"
+      return next(new myError(400, msg));
+    }else return next();    // Everything went fine.
+  });
 }

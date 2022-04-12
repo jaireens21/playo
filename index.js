@@ -63,6 +63,8 @@ app.use(session(sessionConfig));
 const flash=require('connect-flash');
 app.use(flash());
 
+const User=require('./models/user.js');
+
 const passport=require('passport');
 const LocalStrategy=require('passport-local');
 app.use(passport.initialize());
