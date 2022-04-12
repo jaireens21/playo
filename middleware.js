@@ -11,7 +11,7 @@ module.exports.isLoggedIn= (req,res,next)=>{
       req.flash('error', 'You must be logged in first!');
       return res.redirect('/login');
     }
-    next();
+    return next();
 }
   
 
@@ -24,7 +24,7 @@ module.exports.isOwner= async(req,res,next)=>{
       req.flash('error', 'You do not have permission to do that!');
       return res.redirect(`/arenas/${id}`);
     }
-    next();
+    return next();
 }
 
 //middleware to check if loggedin user has the role of owner 
@@ -34,7 +34,7 @@ module.exports.hasOwnerRole= async(req,res,next)=>{
     req.flash('error', 'You do not have permission to do that!');
     return res.redirect('/arenas');
   }
-  next();
+  return next();
 }
 
 
@@ -58,39 +58,39 @@ module.exports.validateNewArenaData= (req,res,next)=>{
     const {error}=arnSchema.validate(req.body);
     if(error){
       const msg=error.details.map(e=>e.message).join(',');
-      next(new myError(400, msg)); //call error handler with custom error
+      return next(new myError(400, msg)); //call error handler with custom error
     }else{ 
       let {startDate,endDate,startTiming,endTiming}=req.body.arena;
       let today=new Date();
       today.setUTCHours(10); today.setUTCMinutes(0); today.setUTCSeconds(0); today.setUTCMilliseconds(0);
       let todayStr=today.toLocaleDateString("en-CA");
       if(startDate<todayStr){
-        next(new myError(400,'First Date of Booking cannot be earlier than today!'));
+        return next(new myError(400,'First Date of Booking cannot be earlier than today!'));
       }
       else if(endDate<startDate){
-        next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
+        return next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
       }
       else if(parseFloat(endTiming)<parseFloat(startTiming)){
-        next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
+        return next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
       }
-      else next();//no error--> go to next function 
+      else return next();//no error--> go to next function 
     }
 }
 module.exports.validateEditArenaData= (req,res,next)=>{
   const {error}=arnSchema.validate(req.body);
   if(error){
     const msg=error.details.map(e=>e.message).join(',');
-    next(new myError(400, msg)); //call error handler with custom error
+    return next(new myError(400, msg)); //call error handler with custom error
   }else{ 
     let {startDate,endDate,startTiming,endTiming}=req.body.arena;
     //no check on start Date here. Only if we edit start date, it should not be earlier than today.Unedited, it can continue as an earlier date. This 'onchange' lock needs comparison with arena's existing date and is implemented in the arenas route.
     if(endDate<startDate){
-      next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
+      return next(new myError(400,'Last Date of Booking cannot be earlier than First Date of Booking!'));
     }
     else if(parseFloat(endTiming)<parseFloat(startTiming)){
-      next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
+      return next(new myError(400,'Time of Last booking cannot be earlier than the time of First booking!'));
     }
-    else next();//no error--> go to next function 
+    else return next();//no error--> go to next function 
   }
 }
 
@@ -104,8 +104,8 @@ module.exports.validateBookingFormData= (req,res,next)=>{
     const {error}=formSchema.validate(req.body);
     if(error){
       const msg=error.details.map(e=>e.message).join(',');
-      next(new myError(400, msg)); //call error handler with custom error
-    }else next();//no error--> go to next function 
+      return next(new myError(400, msg)); //call error handler with custom error
+    }else return next();//no error--> go to next function 
 }
 
 
@@ -126,7 +126,7 @@ module.exports.validateUserFormData= (req,res,next)=>{
       //next(new myError(400, msg)); //call error handler with custom error
       req.flash('error', msg);
       return res.redirect('/register');
-    }else next(); 
+    }else return next(); 
 }
 
 //middleware for password complexity check using passwordComplexity npm package
@@ -144,5 +144,5 @@ module.exports.validatePasswordComplexity=(req,res,next)=>{
   if (error){ 
     req.flash('error','Password does not meet complexity criteria! Please try again!');
     return res.redirect('/register');
-  }else next(); 
+  }else return next(); 
 }

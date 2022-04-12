@@ -1,3 +1,5 @@
+//finding bookinsg affected by change in dates/timings/sports while editing an arena
+
 function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,endDate){
     
     function setMyTime(obj){
@@ -8,14 +10,14 @@ function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,en
         return obj;
     }
 
-    let missingDates=[];
-    let commonDates=[];
+    let missingDates=[];//missing due to change of dates
+    let commonDates=[];//common between old dates & new dates
 
     let oldDates=[];
     for (let i=0;i<=((arena.endDate- arena.startDate)/(1000 * 60 * 60 * 24));++i){
-        let aDate=new Date(arena.startDate.toLocaleDateString("en-CA"));
-        aDate.setDate(aDate.getDate()+i); //incrementing from arena.startDate
-        aDate=setMyTime(aDate);
+        let aDate=new Date(arena.startDate.toLocaleDateString("en-CA"));//starting from arena.startDate
+        aDate.setDate(aDate.getDate()+i); //incrementing till arena.endDate
+        aDate=setMyTime(aDate);//setting time to UTC 10 hours
         oldDates.push(aDate.toLocaleDateString("en-CA"));
     }
 
@@ -58,7 +60,7 @@ function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,en
     }
     console.log("conflictingBookings due to missing dates",conflictingBookings);
 
-    //now look for bookings on common dates that might get affected due to change of timings/removal of a sport
+    //conflicting bookings on common dates that are affected due to change of timings
     if(commonDates.length>0){
         let start1=undefined; let start2=undefined; let end1=undefined; let end2=undefined;
         //missingTimeSlots will exist on COMMON dates (dates that are common in old & new date ranges)
@@ -94,6 +96,7 @@ function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,en
             })
         }
         console.log("added conflictingBookings due to start time",conflictingBookings);
+        
         if (end1){
             //find bookings on common dates, in the time between end1 to end2
             arena.bookings.forEach(booking=>{
@@ -106,8 +109,8 @@ function findConflictingBookings(arena,sports,startTiming,endTiming,startDate,en
         }
         console.log("added conflictingBookings due to end time",conflictingBookings);
         
-        //if a sport has been removed, common dates may have bookings that get affected
 
+        //if a sport has been removed, common dates may have bookings that get affected
         //checking if any sport has been removed
         let missingSports=[];
         for(let i=0;i<arena.sports.length;++i){

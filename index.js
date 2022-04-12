@@ -45,13 +45,6 @@ app.engine('ejs', ejsMate);
 
 app.use(express.static(path.join(__dirname,'/public')));
 
-// initial testing of the connection to DB using mongoose model
-// app.get('/makearena', async(req,res)=>{
-//     const myarena=new Arena({name:'home',location:'ontario'});
-//     await myarena.save();
-//     res.send(myarena);
-// })
-
 const myError=require('./utils/myError'); //custom error class
 
 const session= require('express-session');
@@ -69,9 +62,6 @@ const sessionConfig={
 app.use(session(sessionConfig));
 const flash=require('connect-flash');
 app.use(flash());
-
-const Arena=require('./models/arena');
-const User=require('./models/user');
 
 const passport=require('passport');
 const LocalStrategy=require('passport-local');
@@ -102,7 +92,7 @@ app.get('/', (req,res)=>{
   res.render('landing');
 })
 
-//catch all for non-existent routes, can handle any request method (get/post/put etc), put after all known routes
+//catch all for non-existent routes, can handle any request method (get/post/put etc), placed AFTER all known routes
 app.all('*', (req,res,next)=>{
   next (new myError(404,'Page Not Found!'));
 })
