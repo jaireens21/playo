@@ -8,12 +8,12 @@ const path=require('path');
 const mongoSanitize = require('express-mongo-sanitize'); //preventing mongo injection
 const helmet=require('helmet'); //auto setting http headers for security
 
-
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 const mongoose=require('mongoose');
-mongoose.connect('mongodb://localhost:27017/playo',{
+const dbUrl='mongodb://localhost:27017/playo';
+mongoose.connect(dbUrl,{
     useNewUrlParser: true, 
     useUnifiedTopology: true 
 })
@@ -55,14 +55,22 @@ app.use(express.static(path.join(__dirname,'/public')));
 const myError=require('./utils/myError'); //custom error class
 
 const session= require('express-session');
+const MongoDBStore=require('connect-mongo');
 const sessionConfig={
-  name:'parleg',
+  //using mongoDB for session store
+  store:MongoDBStore.create({ 
+    mongoUrl:dbUrl, 
+    touchAfter: 24*60*60, //Lazy session update , time in seconds
+  }),
+   
+  name:'parleg', //changing cookie name from connect.ssid
   secret: 'thisshouldbeabettersecret',
-  resave: false,
+  resave: false, //don't save session if unmodified
   saveUninitialized: true,
   cookie: { 
     httpOnly:true,// helps mitigate the risk of client side script accessing the protected cookie
     //secure:true, //use when deploying, httpS will be reqd to set cookies
+    expires: Date.now() + (1000*60*60*24*7), //cookie will expire after a week (in milliseconds)
     maxAge: 1000*60*60*24*7,     // cookie expires in a week
   }
 }
