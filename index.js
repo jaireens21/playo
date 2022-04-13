@@ -57,6 +57,7 @@ const myError=require('./utils/myError'); //custom error class
 
 const session= require('express-session');
 const MongoDBStore=require('connect-mongo');
+const secret=process.env.SECRET;
 const sessionConfig={
   //using mongoDB for session store
   store:MongoDBStore.create({ 
@@ -65,7 +66,7 @@ const sessionConfig={
   }),
    
   name:'parleg', //changing cookie name from connect.ssid
-  secret: 'thisshouldbeabettersecret',
+  secret,
   resave: false, //don't save session if unmodified
   saveUninitialized: true,
   cookie: { 
@@ -124,6 +125,8 @@ app.use((err,req,res,next)=>{
   res.status(statusCode).render('error.ejs', {err});
 })
 
-app.listen(8080, ()=>{
-  console.log('listening on port 8080');
+const port=process.env.PORT || 8080;
+
+app.listen(port, ()=>{
+  console.log(`listening on port ${port}`);
 })
