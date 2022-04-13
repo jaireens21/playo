@@ -27,7 +27,7 @@ router.get('/', catchAsync(async(req,res)=>{
         return res.redirect('/');
       } else {
         if (req.query.search){
-          sstring=req.query.search;
+          sstring=req.query.search.replace(/[^a-zA-Z0-9 ]/g, ""); //remove special characters to prevent XSS;
           let regex=new RegExp(sstring, 'gi');
           result = allArenas.filter(place=> (place.name.match(regex)||place.location.match(regex)||place.sports.join('').match(regex)));
           if (result.length >= 1) {

@@ -1,9 +1,31 @@
 //all middleware used in routes
-
-const Joi=require('joi');
 const Arena=require('./models/arena');
 const myError=require('./utils/myError');
 const passwordComplexity = require('joi-password-complexity'); //package for password complexity check
+// const Joi=require('joi');
+//html sanitizing
+const BaseJoi = require('joi');
+const sanitizeHtml = require('sanitize-html');
+const extension = (joi) => ({
+    type: 'string',
+    base: joi.string(),
+    messages: {
+        'string.escapeHTML': '{{#label}} must not include HTML!'
+    },
+    rules: {
+        escapeHTML: {
+            validate(value, helpers) {
+                const clean = sanitizeHtml(value, {
+                    allowedTags: [],
+                    allowedAttributes: {},
+                });
+                if (clean !== value) return helpers.error('string.escapeHTML', { value })
+                return clean;
+            }
+        }
+    }
+});
+const Joi=BaseJoi.extend(extension);
 
 //middleware for authentication before accessing certain protected routes
 module.exports.isLoggedIn= (req,res,next)=>{

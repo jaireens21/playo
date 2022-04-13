@@ -6,13 +6,13 @@ const express=require('express');
 const app=express();
 const path=require('path');
 const mongoSanitize = require('express-mongo-sanitize'); //preventing mongo injection
-const helmet=require('helmet'); //auto setting http headers for security
+// const helmet=require('helmet'); //auto setting http headers for security
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 const mongoose=require('mongoose');
-//const dbUrl='mongodb://localhost:27017/playo'; //connecting to local mongo DB
+// const dbUrl='mongodb://localhost:27017/playo'; //connecting to local mongo DB
 // const dbUrl=process.env.DB_URL; //connecting to atlas (cloud mongo db)
 const dbUrl=process.env.DB_URL || 'mongodb://localhost:27017/playo';
 mongoose.connect(dbUrl,{
