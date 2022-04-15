@@ -2,7 +2,7 @@
 
 <%- layout('./layout/boilerplate.ejs') %>
 
-<form method="POST" action="/login" class="w-50 mx-auto needs-validation mb-3" novalidate>
+<form method="POST" action="/login" class="loginForm mx-auto needs-validation" novalidate>
     <h1 class="text-center">Enter login details:</h1>
     <div class="mb-3">
         <label for="username">Username:</label>
@@ -22,7 +22,11 @@
      
 
 
-    <button type="submit" class="btn btn-success my-3 me-3">Login</button>
-    <a href="/forgot" class="btn btn-primary">Forgot Password ?</a>
+    <button type="submit" class="btn btn-primary my-3 me-2">Login</button>
+    <a href="/forgot" class="btn btn-danger my-3 me-3">Forgot Password?</a>
+    <div>
+        <a href="/register" class="btn btn-success">Create New Account</a>
+    </div>
+    
 </form>
 

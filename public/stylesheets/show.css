@@ -70,6 +70,14 @@
     width:70%;
     margin:3rem auto;
 }
+.loginForm{
+    width:50%;
+    margin:3rem auto;
+}
+.registerForm{
+    width:50%;
+    margin:3rem auto;
+}
 
 .card-header{
     font-weight: 500;
@@ -92,6 +100,12 @@
     .bookingForm{
         width:50%;
     }
+    .loginForm{
+        width:40%;
+    }
+    .registerForm{
+        width:40%;
+    }
     .myBookingsDiv{
         width:60%;
     }
@@ -106,6 +120,7 @@
     .bookingForm{
         width:40%;
     }
+    
     .showpageDiv{
         width:60%;
     }
@@ -123,4 +138,12 @@
     }
     
     
+}
+@media(min-width:1200px){
+    .loginForm{
+        width:30%;
+    }
+    .registerForm{
+        width:30%;
+    }
 }
