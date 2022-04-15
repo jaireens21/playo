@@ -29,6 +29,7 @@ const arenaSchema= new mongoose.Schema({
     },
     images: [ImageSchema],  //an array of objects, each with url & filename
     sports:[String],
+    allSports:[String], //keep a track of all sports ever added to the arena
     bookings:[
         {   sport:String, 
             date:Date, 

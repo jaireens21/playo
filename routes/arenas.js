@@ -59,7 +59,7 @@ router.post('/', isLoggedIn, hasOwnerRole, uploadingImages, validateNewArenaData
     endDate=createDateObj(endDate);
     newArena.startDate=startDate;//store in DB as date objects
     newArena.endDate=endDate;
-  
+    newArena.allSports=sports;//to begin with, store sports in allSports as well.
     await newArena.save();
   
     req.flash('success', 'Successfully created new Arena!');
@@ -88,8 +88,8 @@ router.get('/:id/bookings',isLoggedIn, isOwner, catchAsync(async(req,res)=>{
 
   let today=new Date(); let todayStr=today.toLocaleDateString("en-CA");
 
-  let upcomingBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")>todayStr).sort((a,b)=>(a.date-b.date));
-  let pastBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")<=todayStr).sort((a,b)=>(a.date-b.date));
+  let upcomingBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")>=todayStr).sort((a,b)=>(a.date-b.date));
+  let pastBookings=arena.bookings.filter(booking=>booking.date.toLocaleDateString("en-CA")<todayStr).sort((a,b)=>(a.date-b.date));
   
   return res.render('arenaBookings.ejs', {arena,userId:req.user._id,upcomingBookings,pastBookings});
 }))

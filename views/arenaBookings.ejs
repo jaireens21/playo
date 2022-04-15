@@ -1,4 +1,4 @@
-<!-- show all booking made for the selected arena -->
+<!-- show all bookings made for the selected arena -->
 
 <%- layout('./layout/boilerplate.ejs') %>
 
@@ -7,7 +7,7 @@
   <p class="text-center fs-4"><%=arena.location%></p>
   
   <h2 class="fs-4 mt-5 text-uppercase text-decoration-underline">Upcoming Bookings</h2>
-  <% for(let sport of arena.sports){ %> 
+  <% for(let sport of arena.allSports){ %> 
     <h3 class="fs-4"> <%=sport%> </h3>
     <% if (upcomingBookings.some(booking=>(booking.sport===sport))){%>
       <table class="table table-hover mb-5 mx-auto">

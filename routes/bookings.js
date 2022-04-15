@@ -98,6 +98,10 @@ router.post('/', isLoggedIn, catchAsync(async(req,res)=>{
     
     const arena=await Arena.findById(req.params.id);
     arena.bookings.push({sport,date:bookingDate,time,playerId:req.user._id});
+    //push sport to allSports, if not already present
+    if(arena.allSports.indexOf(sport)===-1){
+      arena.allSports.push(sport);
+    }
     await arena.save();
 
     const user=await User.findById(req.user._id);
