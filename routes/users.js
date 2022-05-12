@@ -184,6 +184,7 @@ router.put('/reset/:token',validatePasswordComplexity,catchAsync(async(req,res)=
   transporter.sendMail(mailOptions,(err)=>{
     if(err){
       console.log(err);
+      //only displaying the error.We dont want to stall everything if email didnot go through
     }
   })
   req.flash('success', 'Password has been reset.');
@@ -208,8 +209,8 @@ router.get('/users/:id/bookings',isLoggedIn, catchAsync(async(req,res)=>{
     user.bookings.sort((a,b)=>{ return (a.date-b.date);});
     await user.save();
   }
-  let today=new Date();
-  return res.render('userBookings', {user, hasBookings,today});
+  let today=new Date(); let todayStr=today.toLocaleDateString("en-CA");
+  return res.render('userBookings', {user, hasBookings,today,todayStr});
 }) )
 
 //show user's profile details

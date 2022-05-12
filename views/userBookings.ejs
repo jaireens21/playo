@@ -22,7 +22,7 @@
           </tr>
         </thead>
         <tbody>
-          <%let j=0; for (let i=0;i<user.bookings.length;++i){ if(user.bookings[i].date>today){++j; %>
+          <%let j=0; for (let i=0;i<user.bookings.length;++i){ if(user.bookings[i].date>today || user.bookings[i].date.toLocaleDateString("en-CA")===todayStr){++j; %>
             <tr>
               <th scope="row"><%=j%></th>
               <!-- date -->
@@ -63,7 +63,7 @@
           </tr>
         </thead>
         <tbody>
-          <%let k=0; for (let i=0;i<user.bookings.length;++i){ if(user.bookings[i].date<=today){k++; %>
+          <%let k=0; for (let i=0;i<user.bookings.length;++i){ if(user.bookings[i].date<today){k++; %>
             <tr>
               <th scope="row"><%=k%></th>
               <!-- date -->
