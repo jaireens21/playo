@@ -130,7 +130,8 @@ router.post('/', isLoggedIn, catchAsync(async(req,res)=>{
     };
     transporter.sendMail(mailOptions,(err)=>{
       if(err){
-        console.log(err);
+        console.log(err);//only displaying the error.We dont want to stall everything if email didnot go through
+        //user can , in any case, see the booking on his profile
       }
     })
 

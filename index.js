@@ -1,5 +1,6 @@
 if(process.env.NODE_ENV!=='production'){
  require('dotenv').config();
+//  so we can use variables stored in .env file
 }
 
 const express=require('express');
@@ -8,13 +9,13 @@ const path=require('path');
 const mongoSanitize = require('express-mongo-sanitize'); //preventing mongo injection
 // const helmet=require('helmet'); //auto setting http headers for security
 
-app.set('view engine', 'ejs');
+app.set('view engine', 'ejs');//use EJS as templating engine 
 app.set('views', path.join(__dirname, 'views'));
 
-const mongoose=require('mongoose');
-// const dbUrl='mongodb://localhost:27017/playo'; //connecting to local mongo DB
+const mongoose=require('mongoose'); //to define the structure of data in mongoDB
+const dbUrl='mongodb://localhost:27017/playo'; //connecting to local mongo DB
 // const dbUrl=process.env.DB_URL; //connecting to atlas (cloud mongo db)
-const dbUrl=process.env.DB_URL || 'mongodb://localhost:27017/playo';
+// const dbUrl=process.env.DB_URL || 'mongodb://localhost:27017/playo';
 mongoose.connect(dbUrl,{
     useNewUrlParser: true, 
     useUnifiedTopology: true 
@@ -34,15 +35,15 @@ mongoose.connect(dbUrl,{
     //Node normally exits with a 0 status code 
 });
 
-app.use(express.urlencoded({extended:true}));
-app.use(express.json());
+app.use(express.urlencoded({extended:true}));//parses incoming urlencoded requests
+app.use(express.json()); //parses incoming JSON requests 
 app.use(mongoSanitize());
 // app.use(helmet({contentSecurityPolicy: false}));
 
-const methodOverride= require('method-override');
+const methodOverride= require('method-override');//to be able to set methods for forms such as put,delete that are not otherwise supported
 app.use(methodOverride('_method'));
 
-const ejsMate=require('ejs-mate');
+const ejsMate=require('ejs-mate');//for layout, partial and block template functions for EJS
 app.engine('ejs', ejsMate);
 
 app.use(express.static(path.join(__dirname,'/public')));
@@ -57,7 +58,7 @@ app.use(express.static(path.join(__dirname,'/public')));
 const myError=require('./utils/myError'); //custom error class
 
 const session= require('express-session');
-const MongoDBStore=require('connect-mongo');
+const MongoDBStore=require('connect-mongo');//using mongo session store
 const secret=process.env.SECRET;
 const sessionConfig={
   //using mongoDB for session store
@@ -78,13 +79,13 @@ const sessionConfig={
   }
 }
 app.use(session(sessionConfig));
-const flash=require('connect-flash');
+const flash=require('connect-flash');//to flash messages, uses session
 app.use(flash());
 
 const Arena=require('./models/arena');
 const User=require('./models/user');
 
-const passport=require('passport');
+const passport=require('passport'); //for authentication
 const LocalStrategy=require('passport-local');
 app.use(passport.initialize());
 app.use(passport.session());
@@ -93,6 +94,7 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req,res,next)=>{
+  //defining variables on res.locals so that template files (.ejs files,rendered with res.render) have access to them
   res.locals.loggedUser=req.user;
   res.locals.success=req.flash('success');
   res.locals.error=req.flash('error');
