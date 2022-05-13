@@ -13,8 +13,7 @@ app.set('view engine', 'ejs');//use EJS as templating engine
 app.set('views', path.join(__dirname, 'views'));
 
 const mongoose=require('mongoose'); //to define the structure of data in mongoDB
-const dbUrl='mongodb://localhost:27017/playo'; //connecting to local mongo DB
-// const dbUrl=process.env.DB_URL; //connecting to atlas (cloud mongo db)
+const dbUrl=process.env.DB_URL; //connecting to atlas (cloud mongo db)
 // const dbUrl=process.env.DB_URL || 'mongodb://localhost:27017/playo';
 mongoose.connect(dbUrl,{
     useNewUrlParser: true, 
@@ -73,7 +72,7 @@ const sessionConfig={
   saveUninitialized: true,
   cookie: { 
     httpOnly:true,// helps mitigate the risk of client side script accessing the protected cookie
-    //secure:true, //use when deploying, httpS will be reqd to set cookies
+    secure:true, //use when deploying, httpS will be reqd to set cookies
     expires: Date.now() + (1000*60*60*24*7), //cookie will expire after a week (in milliseconds)
     maxAge: 1000*60*60*24*7,     // cookie expires in a week
   }
